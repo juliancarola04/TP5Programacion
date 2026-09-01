@@ -1,4 +1,6 @@
 
+using Microsoft.EntityFrameworkCore;
+
 namespace API
 {
     public class Program
@@ -6,6 +8,9 @@ namespace API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddDbContext<Data.DataContext>(options =>
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Add services to the container.
 
