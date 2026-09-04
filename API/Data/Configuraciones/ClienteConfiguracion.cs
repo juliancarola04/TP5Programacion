@@ -12,9 +12,31 @@ namespace API.Data.Configuraciones
 
             builder.HasKey(x => x.Id);
 
+            builder.HasIndex(x => x.Dni)
+                .IsUnique();
+            
+            builder.HasIndex(x => x.Email)
+                .IsUnique();
+            
             builder.Property(x => x.Nombre)
                 .IsRequired()
                 .HasMaxLength(30);
+            
+            builder.Property(x => x.Dni)
+                .IsRequired()
+                .HasMaxLength(8);
+            
+            builder.Property(x => x.Telefono)
+                .IsRequired()
+                .HasMaxLength(13);
+            
+            builder.Property(x => x.Email)
+                .IsRequired()
+                .HasMaxLength(320);
+            
+            builder.Property(x => x.Direccion)
+                .IsRequired()
+                .HasMaxLength(40);
 
         }
     }

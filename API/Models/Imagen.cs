@@ -1,4 +1,5 @@
-﻿namespace API.Models
+﻿using System.Text.Json.Serialization;
+namespace API.Models
 {
     public class Imagen
     {
@@ -10,6 +11,8 @@
         public long TamanoBytes { get; set; }
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         public int ProductoId { get; set; }
+
+        [JsonIgnore]
         public Producto Producto { get; set; } = null!;
     }
 }
