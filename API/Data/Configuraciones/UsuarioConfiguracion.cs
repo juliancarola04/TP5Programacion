@@ -12,6 +12,12 @@ namespace API.Data.Configuraciones
 
             builder.HasKey(x => x.Id);
 
+            builder.HasIndex(x => x.Username)
+                .IsUnique();
+            
+            builder.HasIndex(x => x.Email)
+                .IsUnique();
+            
             builder.Property(x => x.Username)
                 .IsRequired()
                 .HasMaxLength(30);
@@ -19,6 +25,10 @@ namespace API.Data.Configuraciones
             builder.Property(x => x.Password)
                 .IsRequired()
                 .HasMaxLength(30);
+
+            builder.Property(x => x.Email)
+                .IsRequired()
+                .HasMaxLength(320);
         }
     }
 }
