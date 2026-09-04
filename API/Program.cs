@@ -39,6 +39,14 @@ namespace API
             builder.Services.AddOpenApi();
 
             var app = builder.Build();
+            var uploadsPath = Path.Combine(
+            app.Environment.WebRootPath
+            ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
+
+            if (!Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -81,13 +89,13 @@ namespace API
                 });
 
             app.UseAuthentication();
-
             app.UseAuthorization();
 
 
             app.MapControllers();
 
             app.Run();
+
         }
     }
 }
