@@ -23,10 +23,10 @@ namespace API.Services
 
         public async Task<LoginDtoOutput?> Login(LoginDtoInput loginDtoInput)
         {
-            string username = loginDtoInput.Username.Trim();
-            string password = loginDtoInput.Password.Trim();
+            string username = loginDtoInput.Username;
+            string password = loginDtoInput.Password;
 
-            if (Validaciones.Requeridos(username, password))
+            if (!Validaciones.Requeridos(username, password))
             {
                 throw new DatosLlegaronErradosException("Ya sea el usuario o la contraseña llegaron vacíos.");
             }
@@ -48,7 +48,6 @@ namespace API.Services
                     
                     LoginDtoOutput loginDtoOutput = new LoginDtoOutput()
                     {
-                        Exito = true,
                         Token = token,
                         Expiracion = expiracion
                     };
@@ -62,7 +61,7 @@ namespace API.Services
             }
             catch (DbException e)
             {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
+                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}"); // Quizá acá habría que quitar el e.message.
             }
             
         }

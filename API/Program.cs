@@ -16,6 +16,9 @@ namespace API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+
+            // Add services to the container.
+
             builder.Services.AddDbContext<Data.DataContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -25,46 +28,11 @@ namespace API
             builder.Services.AddOptions<JwtSettings>()
                 .BindConfiguration("JwtSettings");
 
+            builder.Services.AddScoped<LoginService>();
+            builder.Services.AddScoped<RegisterService>();
             builder.Services.AddSingleton<ITokenService, TokenService>();
             builder.Services.AddScoped<IRegisterRepository, RegisterRepositoryPostgreSQL>();
             builder.Services.AddScoped<ILoginRepository, LoginRepositoryPostgreSQL>();
-            builder.Services.AddScoped<ITokenService, TokenService>();
-
-
-
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
-
-            var app = builder.Build();
-            var uploadsPath = Path.Combine(
-            app.Environment.WebRootPath
-            ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
-
-            if (!Directory.Exists(uploadsPath))
-            {
-                Directory.CreateDirectory(uploadsPath);
-            }
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                
-                
-                app.MapOpenApi();
-                app.UseSwaggerUI(opt => {
-                    opt.SwaggerEndpoint("/openapi/v1.json", "API");
-                });
-            }
-
-            if (app.Environment.IsDevelopment())
-            {
-
-            }
-
-            app.UseHttpsRedirection();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer();
@@ -88,8 +56,35 @@ namespace API
                     };
                 });
 
+            builder.Services.AddControllers();
+            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+            builder.Services.AddOpenApi();
+
+            var app = builder.Build();
+            var uploadsPath = Path.Combine(
+            app.Environment.WebRootPath
+            ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
+
+            if (!Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+                app.UseSwaggerUI(opt => {
+                    opt.SwaggerEndpoint("/openapi/v1.json", "API");
+                });
+            }
+
+            app.UseHttpsRedirection();
+
             app.UseAuthentication();
             app.UseAuthorization();
+
+
 
 
             app.MapControllers();
