@@ -6,7 +6,6 @@ using API.Excepciones;
 using API.Models;
 using API.Repositories;
 using API.Utilidades;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
@@ -30,7 +29,7 @@ namespace API.Services
             string password = registerDtoInput.Password.Trim();
             string email = registerDtoInput.Email.Trim();
 
-            if (Validaciones.Requeridos(username, password, email))
+            if (!Validaciones.Requeridos(username, password, email))
             {
                 throw new DatosLlegaronErradosException("Alguno de los datos llegó vacío.");
             }
@@ -40,6 +39,11 @@ namespace API.Services
                 if (await _loginRepo.ExistePorUsername(username))
                 {
                     throw new RecursoExistenteException("Ya existe alguien con ese usuario.");
+                }
+                
+                if (await _loginRepo.ExistePorEmail(email))
+                {
+                    throw new RecursoExistenteException("Ya existe alguien con ese email.");
                 }
             }
             catch (DbException e)
@@ -62,7 +66,6 @@ namespace API.Services
 
                 RegisterDtoOutput registerDtoOutput = new RegisterDtoOutput()
                 {
-                    Exito = true,
                     Token = token,
                     Expiracion = expiracion
                 };
@@ -73,9 +76,6 @@ namespace API.Services
             {
                 throw new BaseDeDatosException($"Pasó un problema y no se pudo crear el usuario: {e.Message}");
             }
-            
-            
-
 
         }
     }

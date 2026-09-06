@@ -23,8 +23,7 @@ namespace API.Data.Configuraciones
                 .HasMaxLength(30);
 
             builder.Property(x => x.Password)
-                .IsRequired()
-                .HasMaxLength(30);
+                .IsRequired();
 
             builder.Property(x => x.Email)
                 .IsRequired()

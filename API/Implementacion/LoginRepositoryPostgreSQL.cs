@@ -21,6 +21,12 @@ public class LoginRepositoryPostgreSQL : ILoginRepository
         
         return await _dataContext.Usuarios.AnyAsync(u=> u.Username == username);
     }
+    
+    public async Task<bool> ExistePorEmail(string email)
+    {
+        
+        return await _dataContext.Usuarios.AnyAsync(u=> u.Email == email);
+    }
 
     public async Task<Usuario?> BuscarPorUsername(string username)
     {
