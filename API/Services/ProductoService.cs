@@ -33,7 +33,7 @@ namespace API.Services
             }
         }
 
-        public async Task<ProductoDetalleDtoOutput> ObtenerPorId(int id)
+        public async Task<Producto> ObtenerPorId(int id)
         {
             try
             {
@@ -44,14 +44,7 @@ namespace API.Services
                     throw new RecursoNoExisteException("No existe ningún producto con ese id.");
                 }
 
-                return new ProductoDetalleDtoOutput(
-                    producto.Id, producto.Nombre, producto.PrecioCompra, producto.PrecioVenta,
-                    producto.Stock, producto.CategoriaId, producto.Categoria?.Nombre,
-                    producto.Imagen is null ? null : new ImagenDtoOutput(
-                        producto.Imagen.Id, producto.Imagen.NombreOriginal, producto.Imagen.NombreArchivo,
-                        producto.Imagen.RutaRelativa, producto.Imagen.TipoContenido,
-                        producto.Imagen.TamanoBytes, producto.Imagen.FechaCreacion)
-                );
+                return producto;
             }
             catch (DbException e)
             {

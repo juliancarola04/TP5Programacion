@@ -31,10 +31,12 @@ namespace API
             builder.Services.AddScoped<LoginService>();
             builder.Services.AddScoped<RegisterService>();
             builder.Services.AddScoped<ProductoService>();
+            builder.Services.AddScoped<ImagenService>();
             builder.Services.AddSingleton<ITokenService, TokenService>();
             builder.Services.AddScoped<IRegisterRepository, RegisterRepositoryPostgreSQL>();
             builder.Services.AddScoped<ILoginRepository, LoginRepositoryPostgreSQL>();
             builder.Services.AddScoped<IProductoRepository, ProductoRepositoryPostgreSQL>();
+            builder.Services.AddScoped<IImagenRepository, ImagenRepositoryPostgreSQL>();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer();
@@ -76,19 +78,13 @@ namespace API
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
-                app.UseSwaggerUI(opt => {
-                    opt.SwaggerEndpoint("/openapi/v1.json", "API");
-                });
             }
 
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles();
             app.UseAuthentication();
             app.UseAuthorization();
-
-
-
-
+            
             app.MapControllers();
 
             app.Run();

@@ -19,11 +19,10 @@
         ImagenDtoOutput? Imagen);
 
     public record ImagenDtoOutput(
-        int Id,
-        string NombreOriginal,
-        string NombreArchivo,
-        string RutaRelativa,
-        string TipoContenido,
-        long TamanoBytes,
-        DateTime FechaCreacion);
+    int Id,
+    string NombreOriginal,
+    string Url,
+    string TipoContenido,
+    long TamanoBytes,
+    DateTime FechaCreacion);
 }
