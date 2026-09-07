@@ -30,9 +30,11 @@ namespace API
 
             builder.Services.AddScoped<LoginService>();
             builder.Services.AddScoped<RegisterService>();
+            builder.Services.AddScoped<ProductoService>();
             builder.Services.AddSingleton<ITokenService, TokenService>();
             builder.Services.AddScoped<IRegisterRepository, RegisterRepositoryPostgreSQL>();
             builder.Services.AddScoped<ILoginRepository, LoginRepositoryPostgreSQL>();
+            builder.Services.AddScoped<IProductoRepository, ProductoRepositoryPostgreSQL>();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer();
