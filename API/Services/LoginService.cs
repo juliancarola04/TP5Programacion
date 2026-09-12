@@ -12,12 +12,14 @@ namespace API.Services
     public class LoginService
     {
         private readonly ILoginRepository _repo;
+        private readonly IUsuarioRepository _usuarioRepository;
         private readonly ITokenService _tokenService;
         
-        public LoginService(ILoginRepository repo, ITokenService tokenService)
+        public LoginService(ILoginRepository repo, ITokenService tokenService, IUsuarioRepository usuarioRepository)
         {
             _repo = repo;
             _tokenService = tokenService;
+            _usuarioRepository = usuarioRepository;
         }
 
 
@@ -26,14 +28,14 @@ namespace API.Services
             string username = loginDtoInput.Username;
             string password = loginDtoInput.Password;
 
-            if (!Validaciones.Requeridos(username, password))
+            if (Validaciones.EstanDatosBien(username, password) == false)
             {
                 throw new DatosLlegaronErradosException("Ya sea el usuario o la contraseña llegaron vacíos.");
             }
 
             try
             {
-                Usuario? usuario = await _repo.BuscarPorUsername(username);
+                Usuario? usuario = await _usuarioRepository.BuscarPorUsername(username);
                 
                 if (usuario is null)
                 {

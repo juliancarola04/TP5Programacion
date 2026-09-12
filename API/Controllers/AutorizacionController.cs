@@ -49,7 +49,6 @@ namespace API.Controllers
 
         [HttpPost("register")]
         [AllowAnonymous]
-
         public async Task<ActionResult<RegisterDtoOutput>> Register(RegisterDtoInput registerDtoInput)
         {
             try
@@ -67,7 +66,7 @@ namespace API.Controllers
             }
             catch (BaseDeDatosException e)
             {
-                return Conflict(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
     }
