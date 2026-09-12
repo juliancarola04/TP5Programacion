@@ -88,7 +88,7 @@ namespace API.Services
 
                 if (usuario == null)
                 {
-                    throw new RecursoNoExisteException("No existe ningún usuario con ese ID.");
+                    throw new RecursoNoExisteException("No existe ningún proveedor con ese ID.");
                 }
 
                 if (usuarioDtoInput.Username != usuario.Username && Validaciones.EstanDatosBien(usuarioDtoInput.Username))
@@ -182,8 +182,18 @@ namespace API.Services
         {
             try
             {
-                List<UsuarioDtoOutput> usuarios = await _repo.ObtenerTodos();
-                return usuarios;
+                List<Usuario> usuarios = await _repo.ObtenerTodos();
+                
+                List<UsuarioDtoOutput> usuariosDtoOutputs = usuarios.Select(
+                    u => new UsuarioDtoOutput
+                    {
+                        Id = u.Id,
+                        Username = u.Username,
+                        Email = u.Email,
+                        EsAdministrador = u.EsAdministrador
+                    }).ToList();
+                
+                return usuariosDtoOutputs;
             }
             catch (DbException)
             {
