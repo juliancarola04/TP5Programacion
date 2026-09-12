@@ -54,7 +54,7 @@ namespace API.Services
 
         public async Task<ClienteDtoOutput> Crear(CrearClienteDtoInput dto)
         {
-            if (!Validaciones.Requeridos(dto.Nombre, dto.Dni, dto.Telefono, dto.Email, dto.Direccion))
+            if (!Validaciones.EstanDatosBien(dto.Nombre, dto.Dni, dto.Telefono, dto.Email, dto.Direccion))
             {
                 throw new DatosLlegaronErradosException("Todos los campos del cliente son obligatorios.");
             }
@@ -98,7 +98,7 @@ namespace API.Services
 
         public async Task Actualizar(int id, ActualizarClienteDtoInput dto)
         {
-            if (!Validaciones.Requeridos(dto.Nombre, dto.Dni, dto.Telefono, dto.Email, dto.Direccion))
+            if (!Validaciones.EstanDatosBien(dto.Nombre, dto.Dni, dto.Telefono, dto.Email, dto.Direccion))
             {
                 throw new DatosLlegaronErradosException("Todos los campos del cliente son obligatorios.");
             }

@@ -23,7 +23,7 @@ namespace API.Utilidades
         }
 
 
-        public static bool Requeridos(params decimal?[] valores)
+        public static bool EstanDatosBien(params decimal?[] valores)
         {
             if (valores == null || valores.Length == 0)
                 return false;
