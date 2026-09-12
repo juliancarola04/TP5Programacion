@@ -32,19 +32,9 @@ namespace API.Implementacion
             await _dataContext.SaveChangesAsync();
         }
 
-        public async Task<List<UsuarioDtoOutput>> ObtenerTodos()
-        {
-            List<UsuarioDtoOutput> usuarios = await _dataContext.Usuarios.Select(
-                u => new UsuarioDtoOutput
-                {
-                    Id = u.Id,
-                    Username = u.Username,
-                    Email = u.Email,
-                    EsAdministrador = u.EsAdministrador
-                }).ToListAsync();
-
-
-            return usuarios;
+        public async Task<List<Usuario>> ObtenerTodos()
+        { 
+            return await _dataContext.Usuarios.ToListAsync();;
         }
 
         public async Task<bool> ExistePorUsername(string username)

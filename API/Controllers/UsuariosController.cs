@@ -14,11 +14,11 @@ namespace API.Controllers
     [Route("api/usuarios")]
     [ApiController]
     [Authorize]
-    public class UsuarioController : ControllerBase
+    public class UsuariosController : ControllerBase
     {
         private readonly UsuarioService _usuarioService;
 
-        public UsuarioController(UsuarioService usuarioService)
+        public UsuariosController(UsuarioService usuarioService)
         {
             _usuarioService = usuarioService;
         }
@@ -84,7 +84,7 @@ namespace API.Controllers
             }
         }
 
-        [HttpPost("dardebaja")]
+        [HttpDelete("dardebaja")]
         public async Task<ActionResult> DarDeBaja()
         {
             try
@@ -113,7 +113,7 @@ namespace API.Controllers
             }
         }
 
-        [HttpPost("actualizar")]
+        [HttpPut("actualizar")]
         public async Task<ActionResult<UsuarioAuthDtoOutput>> Actualizar([FromBody] UsuarioDtoInput usuarioDtoInput)
         {
             try
@@ -146,7 +146,7 @@ namespace API.Controllers
             }
         }
 
-        [HttpPost("admin/dardebaja/{id:int}")]
+        [HttpDelete("admin/dardebaja/{id:int}")]
         [Authorize(Roles = "Administrador")]
         public async Task<ActionResult> DarDeBajaAdmin(int id)
         {
@@ -169,7 +169,7 @@ namespace API.Controllers
             }
         }
 
-        [HttpPost("admin/actualizar/{id:int}")]
+        [HttpPut("admin/actualizar/{id:int}")]
         [Authorize(Roles = "Administrador")]
         public async Task<ActionResult> ActualizarAdmin(int id, [FromBody] UsuarioDtoInput usuarioDtoInput)
         {
