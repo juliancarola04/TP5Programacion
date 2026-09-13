@@ -32,15 +32,24 @@ namespace API
             builder.Services.AddScoped<RegisterService>();
             builder.Services.AddScoped<ProductoService>();
             builder.Services.AddScoped<ImagenService>();
+
+            builder.Services.AddScoped<UsuarioService>();
             builder.Services.AddScoped<CategoriaService>();
             builder.Services.AddScoped<ClienteService>();
+            builder.Services.AddScoped<ProveedorService>();
+
+
             builder.Services.AddSingleton<ITokenService, TokenService>();
             builder.Services.AddScoped<IRegisterRepository, RegisterRepositoryPostgreSQL>();
             builder.Services.AddScoped<ILoginRepository, LoginRepositoryPostgreSQL>();
             builder.Services.AddScoped<IProductoRepository, ProductoRepositoryPostgreSQL>();
             builder.Services.AddScoped<IImagenRepository, ImagenRepositoryPostgreSQL>();
+
+            builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositoryPostgreSQL>();
             builder.Services.AddScoped<ICategoriaRepository, CategoriaRepositoryPostgreSQL>();
             builder.Services.AddScoped<IClienteRepository, ClienteRepositoryPostgreSQL>();
+            builder.Services.AddScoped<IProveedorRepository, ProveedorRepositoryPostgreSQL>();
+
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer();

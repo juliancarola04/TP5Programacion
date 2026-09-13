@@ -54,7 +54,7 @@ namespace API.Services
 
         public async Task<ProductoListadoDtoOutput> Crear(CrearProductoDtoInput dto)
         {
-            if (!Validaciones.Requeridos(dto.Nombre))
+            if (Validaciones.EstanDatosBien(dto.Nombre) == false)
             {
                 throw new DatosLlegaronErradosException("El nombre del producto es obligatorio.");
             }
@@ -89,7 +89,7 @@ namespace API.Services
 
         public async Task Actualizar(int id, ActualizarProductoDtoInput dto)
         {
-            if (!Validaciones.Requeridos(dto.Nombre))
+            if (Validaciones.EstanDatosBien(dto.Nombre) == false)
             {
                 throw new DatosLlegaronErradosException("El nombre del producto es obligatorio.");
             }

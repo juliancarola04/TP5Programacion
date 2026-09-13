@@ -24,6 +24,12 @@ namespace API.Data
             modelBuilder.ApplyConfiguration(new VentaConfiguracion());
             modelBuilder.ApplyConfiguration(new UsuarioConfiguracion());
 
+
+            // https://codewithmukesh.com/blog/global-query-filters-efcore/ Para no tener que poner si está o no eliminado. Esto lo tenemos que hacer con la mayoría de entidades.
+            modelBuilder.Entity<Usuario>().HasQueryFilter(u => !u.Eliminado);
+            modelBuilder.Entity<Proveedor>().HasQueryFilter(p => !p.Eliminado);
+
+
         }
 
         public DbSet<Categoria> Categorias{ get; set; }

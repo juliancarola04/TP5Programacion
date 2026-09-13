@@ -7,7 +7,8 @@
         public required string CUIT { get; set; }
         public required string Telefono { get; set; } 
         public required string Email { get; set; } 
-        public required string Direccion { get; set; } 
+        public required string Direccion { get; set; }
+        public bool Eliminado { get; set; } = false;
         public ICollection<Ingreso>? Ingresos { get; set; }
     }
 }

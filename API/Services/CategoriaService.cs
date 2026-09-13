@@ -50,7 +50,7 @@ namespace API.Services
         }
         public async Task<CategoriaDtoOutput> Crear(CrearCategoriaDtoInput dto)
         {
-            if (!Validaciones.Requeridos(dto.Nombre, dto.Descripcion))
+            if (!Validaciones.EstanDatosBien(dto.Nombre, dto.Descripcion))
             {
                 throw new DatosLlegaronErradosException("El nombre y la descripción de la categoría son obligatorios.");
             }
@@ -79,7 +79,7 @@ namespace API.Services
         }
         public async Task Actualizar(int id, ActualizarCategoriaDtoInput dto)
         {
-            if (!Validaciones.Requeridos(dto.Nombre, dto.Descripcion))
+            if (!Validaciones.EstanDatosBien(dto.Nombre, dto.Descripcion))
             {
                 throw new DatosLlegaronErradosException("El nombre y la descripción de la categoría son obligatorios.");
             }

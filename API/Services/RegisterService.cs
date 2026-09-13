@@ -12,14 +12,14 @@ namespace API.Services
     public class RegisterService
     {
         private readonly IRegisterRepository _repo;
-        private readonly ILoginRepository _loginRepo;
+        private readonly IUsuarioRepository _usuarioRepository;
         private readonly ITokenService _tokenService;
 
 
-        public RegisterService(IRegisterRepository repo, ILoginRepository loginRepo, ITokenService tokenService)
+        public RegisterService(IRegisterRepository repo, IUsuarioRepository usuarioRepository, ITokenService tokenService)
         {
             _repo = repo;
-            _loginRepo = loginRepo;
+            _usuarioRepository = usuarioRepository;
             _tokenService = tokenService;
         }
 
@@ -29,19 +29,19 @@ namespace API.Services
             string password = registerDtoInput.Password.Trim();
             string email = registerDtoInput.Email.Trim();
 
-            if (!Validaciones.Requeridos(username, password, email))
+            if (Validaciones.EstanDatosBien(username, password, email) == false)
             {
                 throw new DatosLlegaronErradosException("Alguno de los datos llegó vacío.");
             }
 
             try
             {
-                if (await _loginRepo.ExistePorUsername(username))
+                if (await _usuarioRepository.ExistePorUsername(username))
                 {
                     throw new RecursoExistenteException("Ya existe alguien con ese usuario.");
                 }
                 
-                if (await _loginRepo.ExistePorEmail(email))
+                if (await _usuarioRepository.ExistePorEmail(email))
                 {
                     throw new RecursoExistenteException("Ya existe alguien con ese email.");
                 }
@@ -55,7 +55,7 @@ namespace API.Services
             {
                 Username = username,
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword(password),
-                Email = email
+                Email = email,
             };
 
             try

@@ -24,6 +24,7 @@ public class TokenService(IOptions<JwtSettings> jwtSettings) : ITokenService
         {
             new(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, usuario.Email),
+            new(ClaimTypes.Role, usuario.EsAdministrador ? "Administrador": "Visitante")
         };
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Key));
