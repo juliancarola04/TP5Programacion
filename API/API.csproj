@@ -21,9 +21,6 @@
     <PackageReference Include="NuGet.Protocol" Version="7.9.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
   </ItemGroup>
-	<ItemGroup>
-		<Folder Include="Controllers\" />
-	</ItemGroup>
 
 
 </Project>

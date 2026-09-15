@@ -26,6 +26,7 @@ namespace API.Implementacion
                 .Include(p => p.Categoria)
                 .Include(p => p.Imagen)
                 .FirstOrDefaultAsync(p => p.Id == id);
+            //acá nunca agregar AsNoTracking porque va a romper el flujo de manejo del stock
         }
 
         public async Task<bool> ExistePorNombre(string nombre)
