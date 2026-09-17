@@ -1,7 +1,8 @@
 ﻿namespace API.DTOs.Input
 {
-    public record ItemIngresoDtoInput(int ProductoId, int Cantidad);
+    public record ItemIngresoDtoInput(int ProductoId, int Cantidad, decimal PrecioUnitario);
+
     public record CrearIngresoDtoInput(
-        int IdProovedor, 
+        int ProveedorId,
         List<ItemIngresoDtoInput> Items);
 }

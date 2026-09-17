@@ -6,14 +6,16 @@
         int Cantidad,
         decimal PrecioUnitario,
         decimal Subtotal);
+
     public record IngresoDtoOutput(
         int Id,
         DateTime Fecha,
         decimal Total,
-        int ProovedorId,
-        string RazonSocial,
+        int ProveedorId,
+        string ProveedorRazonSocial,
         int UsuarioId,
         string UsuarioUsername,
+        bool Anulado,
         List<DetalleIngresoDtoOutput> Detalles);
 
     public record IngresoListadoDtoOutput(
@@ -21,6 +23,7 @@
         DateTime Fecha,
         decimal Total,
         int ProveedorId,
-        string ProovedorRazonSocial);
+        string ProveedorRazonSocial,
+        bool Anulado);
 }
 

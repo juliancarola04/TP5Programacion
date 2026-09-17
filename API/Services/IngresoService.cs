@@ -1,0 +1,202 @@
+﻿using System.Data.Common;
+using API.DTOs.Input;
+using API.DTOs.Output;
+using API.Excepciones;
+using API.Models;
+using API.Repositories;
+
+namespace API.Services;
+
+public class IngresoService
+{
+    private readonly IIngresoRepository _repo;
+    private readonly IProductoRepository _productoRepo;
+    private readonly IProveedorRepository _proveedorRepo;
+
+    public IngresoService(IIngresoRepository repo, IProductoRepository productoRepo, IProveedorRepository proveedorRepo)
+    {
+        _repo = repo;
+        _productoRepo = productoRepo;
+        _proveedorRepo = proveedorRepo;
+    }
+
+    public async Task<List<IngresoListadoDtoOutput>> ObtenerTodos()
+    {
+        try
+        {
+            List<Ingreso> ingresos = await _repo.ObtenerTodos();
+
+            return ingresos.Select(i => new IngresoListadoDtoOutput(
+                i.Id, i.Fecha, i.Total, i.ProveedorId, i.Proveedor.RazonSocial, i.Anulado
+            )).ToList();
+        }
+        catch (DbException e)
+        {
+            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
+        }
+    }
+
+    public async Task<IngresoDtoOutput> ObtenerPorId(int id)
+    {
+        try
+        {
+            Ingreso? ingreso = await _repo.ObtenerPorId(id);
+
+            if (ingreso is null)
+            {
+                throw new RecursoNoExisteException("No existe ningún ingreso con ese id.");
+            }
+
+            return MapearADto(ingreso);
+        }
+        catch (DbException e)
+        {
+            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
+        }
+    }
+
+    public async Task<IngresoDtoOutput> Crear(CrearIngresoDtoInput dto, int usuarioId)
+    {
+        if (dto.Items is null || dto.Items.Count == 0)
+        {
+            throw new DatosLlegaronErradosException("El ingreso debe tener al menos un producto.");
+        }
+
+        if (dto.Items.Any(i => i.Cantidad <= 0))
+        {
+            throw new DatosLlegaronErradosException("La cantidad de cada producto debe ser mayor a cero.");
+        }
+
+        if (dto.Items.Any(i => i.PrecioUnitario <= 0))
+        {
+            throw new DatosLlegaronErradosException("El precio unitario de cada producto debe ser mayor a cero.");
+        }
+
+        bool hayDuplicados = dto.Items
+            .GroupBy(i => i.ProductoId)
+            .Any(g => g.Count() > 1);
+
+        if (hayDuplicados)
+        {
+            throw new DatosLlegaronErradosException(
+                "Hay un producto repetido en la lista de items. Combiná las cantidades en un solo ítem antes de enviar.");
+        }
+
+        try
+        {
+            Proveedor? proveedor = await _proveedorRepo.BuscarPorId(dto.ProveedorId);
+            if (proveedor is null)
+            {
+                throw new RecursoNoExisteException("No existe ningún proveedor con ese id.");
+            }
+
+            List<DetalleIngreso> detalles = new List<DetalleIngreso>();
+            decimal total = 0;
+
+            foreach (ItemIngresoDtoInput item in dto.Items)
+            {
+                Producto? producto = await _productoRepo.ObtenerPorId(item.ProductoId);
+
+                if (producto is null)
+                {
+                    throw new RecursoNoExisteException($"No existe ningún producto con id {item.ProductoId}.");
+                }
+
+                producto.Stock += item.Cantidad;
+                producto.PrecioCompra = item.PrecioUnitario; // actualiza el costo vigente en el catálogo
+
+                decimal subtotal = item.PrecioUnitario * item.Cantidad;
+                total += subtotal;
+
+                detalles.Add(new DetalleIngreso
+                {
+                    ProductoId = producto.Id,
+                    Cantidad = item.Cantidad,
+                    PrecioUnitario = item.PrecioUnitario
+                });
+            }
+
+            Ingreso ingreso = new Ingreso
+            {
+                Fecha = DateTime.UtcNow,
+                Total = total,
+                ProveedorId = dto.ProveedorId,
+                UsuarioId = usuarioId,
+                DetallesIngresos = detalles
+            };
+
+            await _repo.Crear(ingreso);
+
+            Ingreso? ingresoCompleto = await _repo.ObtenerPorId(ingreso.Id);
+            return MapearADto(ingresoCompleto!);
+        }
+        catch (DbException e)
+        {
+            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
+        }
+    }
+
+    public async Task Anular(int id)
+    {
+        try
+        {
+            Ingreso? ingreso = await _repo.ObtenerParaAnular(id);
+
+            if (ingreso is null)
+            {
+                throw new RecursoNoExisteException("No existe ningún ingreso con ese id.");
+            }
+
+            if (ingreso.Anulado)
+            {
+                throw new DatosLlegaronErradosException("El ingreso ya se encuentra anulado.");
+            }
+
+            // Antes de tocar nada, verificamos que revertir el stock no deje ningún producto en negativo.
+            foreach (DetalleIngreso detalle in ingreso.DetallesIngresos)
+            {
+                if (detalle.Producto.Stock < detalle.Cantidad)
+                {
+                    throw new DatosLlegaronErradosException(
+                        $"No se puede anular: el producto '{detalle.Producto.Nombre}' (id {detalle.Producto.Id}) " +
+                        $"tiene stock actual {detalle.Producto.Stock}, menor a las {detalle.Cantidad} unidades a revertir.");
+                }
+            }
+
+            foreach (DetalleIngreso detalle in ingreso.DetallesIngresos)
+            {
+                detalle.Producto.Stock -= detalle.Cantidad;
+            }
+
+            ingreso.Anulado = true;
+
+            await _repo.GuardarCambios();
+        }
+        catch (DbException e)
+        {
+            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
+        }
+    }
+
+    private static IngresoDtoOutput MapearADto(Ingreso ingreso)
+    {
+        List<DetalleIngresoDtoOutput> detalles = ingreso.DetallesIngresos.Select(d => new DetalleIngresoDtoOutput(
+            d.ProductoId,
+            d.Producto.Nombre,
+            d.Cantidad,
+            d.PrecioUnitario,
+            d.PrecioUnitario * d.Cantidad
+        )).ToList();
+
+        return new IngresoDtoOutput(
+            ingreso.Id,
+            ingreso.Fecha,
+            ingreso.Total,
+            ingreso.ProveedorId,
+            ingreso.Proveedor.RazonSocial,
+            ingreso.UsuarioId,
+            ingreso.Usuario.Username,
+            ingreso.Anulado,
+            detalles);
+    }
+}
