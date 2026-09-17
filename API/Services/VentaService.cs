@@ -1,9 +1,10 @@
-﻿using System.Data.Common;
-using API.DTOs.Input;
+﻿using API.DTOs.Input;
 using API.DTOs.Output;
 using API.Excepciones;
 using API.Models;
 using API.Repositories;
+using API.Utilidades;
+using System.Data.Common;
 
 namespace API.Services
 {
@@ -26,7 +27,7 @@ namespace API.Services
                 List<Venta> ventas = await _repo.ObtenerTodas();
 
                 return ventas.Select(v => new VentaListadoDtoOutput(
-                    v.Id, v.Fecha, v.Total, v.ClienteId, v.Cliente.Nombre
+                    v.Id, v.Fecha, v.Total, v.ClienteId, v.Cliente.Nombre, v.Anulada
                 )).ToList();
             }
             catch (DbException e)
@@ -147,12 +148,38 @@ namespace API.Services
                 venta.Cliente.Nombre,
                 venta.UsuarioId,
                 venta.Usuario.Username,
+                venta.Anulada,
                 detalles);
         }
+        public async Task Anular(int id)
+        {
+            try
+            {
+                Venta? venta = await _repo.ObtenerParaAnular(id);
 
+                if (venta is null)
+                {
+                    throw new RecursoNoExisteException("No existe ninguna venta con ese id.");
+                }
 
+                if (venta.Anulada)
+                {
+                    throw new DatosLlegaronErradosException("La venta ya se encuentra anulada.");
+                }
 
+                foreach (DetalleVenta detalle in venta.DetallesVentas)
+                {
+                    detalle.Producto.Stock += detalle.Cantidad;
+                }
 
+                venta.Anulada = true;
 
+                await _repo.GuardarCambios();
+            }
+            catch (DbException e)
+            {
+                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
+            }
+        }
     }
 }

@@ -74,6 +74,27 @@ public class VentasController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
     }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Anular(int id)
+    {
+        try
+        {
+            await _ventaService.Anular(id);
+            return NoContent();
+        }
+        catch (DatosLlegaronErradosException e)
+        {
+            return BadRequest(e.Message);
+        }
+        catch (RecursoNoExisteException e)
+        {
+            return NotFound(e.Message);
+        }
+        catch (BaseDeDatosException e)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        }
+    }
 }
 
 
