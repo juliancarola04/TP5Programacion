@@ -6,6 +6,8 @@ namespace API.Repositories
     {
         Task<List<Venta>> ObtenerTodas();
         Task<Venta?> ObtenerPorId(int id);
+        Task<Venta?> ObtenerParaAnular(int id);
         Task Crear(Venta venta);
+        Task GuardarCambios();
     }
 }

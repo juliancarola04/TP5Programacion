@@ -8,34 +8,38 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace API.Controllers;
+
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class VentasController : ControllerBase
+public class IngresosController : ControllerBase
 {
-    private readonly VentaService _ventaService;
-    public VentasController(VentaService ventaService)
+    private readonly IngresoService _ingresoService;
+
+    public IngresosController(IngresoService ingresoService)
     {
-        _ventaService = ventaService;
+        _ingresoService = ingresoService;
     }
+
     [HttpGet]
-    public async Task<ActionResult<List<VentaListadoDtoOutput>>> ObtenerTodas()
+    public async Task<ActionResult<List<IngresoListadoDtoOutput>>> ObtenerTodos()
     {
         try
         {
-            return Ok(await _ventaService.ObtenerTodas());
+            return Ok(await _ingresoService.ObtenerTodos());
         }
         catch (BaseDeDatosException e)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
     }
+
     [HttpGet("{id}")]
-    public async Task<ActionResult<VentaDtoOutput>> ObtenerPorId(int id)
+    public async Task<ActionResult<IngresoDtoOutput>> ObtenerPorId(int id)
     {
         try
         {
-            return Ok(await _ventaService.ObtenerPorId(id));
+            return Ok(await _ingresoService.ObtenerPorId(id));
         }
         catch (RecursoNoExisteException e)
         {
@@ -46,8 +50,9 @@ public class VentasController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
     }
+
     [HttpPost]
-    public async Task<ActionResult<VentaDtoOutput>> Crear(CrearVentaDtoInput dto)
+    public async Task<ActionResult<IngresoDtoOutput>> Crear(CrearIngresoDtoInput dto)
     {
         string? usuarioIdClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
 
@@ -58,8 +63,8 @@ public class VentasController : ControllerBase
 
         try
         {
-            VentaDtoOutput venta = await _ventaService.Crear(dto, usuarioId);
-            return CreatedAtAction(nameof(ObtenerPorId), new { id = venta.Id }, venta);
+            IngresoDtoOutput ingreso = await _ingresoService.Crear(dto, usuarioId);
+            return CreatedAtAction(nameof(ObtenerPorId), new { id = ingreso.Id }, ingreso);
         }
         catch (DatosLlegaronErradosException e)
         {
@@ -74,12 +79,13 @@ public class VentasController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
     }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Anular(int id)
     {
         try
         {
-            await _ventaService.Anular(id);
+            await _ingresoService.Anular(id);
             return NoContent();
         }
         catch (DatosLlegaronErradosException e)
@@ -96,5 +102,3 @@ public class VentasController : ControllerBase
         }
     }
 }
-
-

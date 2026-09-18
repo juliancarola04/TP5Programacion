@@ -37,6 +37,7 @@ namespace API
             builder.Services.AddScoped<ClienteService>();
             builder.Services.AddScoped<ProveedorService>();
             builder.Services.AddScoped<VentaService>();
+            builder.Services.AddScoped<IngresoService>();
 
 
             builder.Services.AddSingleton<ITokenService, TokenService>();
@@ -49,6 +50,7 @@ namespace API
             builder.Services.AddScoped<IClienteRepository, ClienteRepositoryPostgreSQL>();
             builder.Services.AddScoped<IProveedorRepository, ProveedorRepositoryPostgreSQL>();
             builder.Services.AddScoped<IVentaRepository, VentaRepositoryPostgreSQL>();
+            builder.Services.AddScoped<IIngresoRepository, IngresoRepositoryPostgreSQL>();
 
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

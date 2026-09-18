@@ -16,6 +16,7 @@ namespace API.DTOs.Output
         string ClienteNombre,
         int UsuarioId,
         string UsuarioUsername,
+        bool Anulada,
         List<DetalleVentaDtoOutput> Detalles);
 
     public record VentaListadoDtoOutput(
@@ -23,5 +24,6 @@ namespace API.DTOs.Output
         DateTime Fecha,
         decimal Total,
         int ClienteId,
-        string ClienteNombre);
+        string ClienteNombre,
+        bool Anulada);
 }

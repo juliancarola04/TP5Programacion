@@ -32,11 +32,22 @@ namespace API.Implementacion
             .FirstOrDefaultAsync(v => v.Id == id);
 
     }
-    public async Task Crear(Venta venta)
-    {
-        _dataContext.Ventas.Add(venta);
-        await _dataContext.SaveChangesAsync();
-    }
+        public async Task<Venta?> ObtenerParaAnular(int id)
+        {
+            return await _dataContext.Ventas
+                .Include(v => v.DetallesVentas)
+                    .ThenInclude(d => d.Producto)
+                .FirstOrDefaultAsync(v => v.Id == id);
+        }
+        public async Task Crear(Venta venta)
+        {
+            _dataContext.Ventas.Add(venta);
+            await _dataContext.SaveChangesAsync();
+        }
+        public async Task GuardarCambios()
+        {
+            await _dataContext.SaveChangesAsync();
+        }
 
     }
 
