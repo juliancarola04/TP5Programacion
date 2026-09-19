@@ -1,10 +1,10 @@
-﻿using API.DTOs.Input;
-using API.DTOs.Output;
-using API.Excepciones;
+﻿using API.Excepciones;
 using API.Models;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TP5Programacion.Compartidas.DTO.Producto.Request;
+using TP5Programacion.Compartidas.DTO.Producto.Response;
 
 namespace API.Controllers
 {
@@ -24,14 +24,15 @@ namespace API.Controllers
         }
 
         [HttpPost("{id}/imagen")]
-        public async Task<ActionResult<ImagenDtoOutput>> SubirImagen(int id, IFormFile archivo)
+        [Authorize(Roles = "Administrador")]
+        public async Task<ActionResult<ProductoImagenResponse>> SubirImagen(int id, IFormFile archivo)
         {
             try
             {
                 Imagen imagen = await _imagenService.SubirImagen(id, archivo);
 
                 string baseUrl = $"{Request.Scheme}://{Request.Host}";
-                ImagenDtoOutput dto = new ImagenDtoOutput(
+                ProductoImagenResponse dto = new ProductoImagenResponse(
                     imagen.Id,
                     imagen.NombreOriginal,
                     $"{baseUrl}/{imagen.RutaRelativa}",
@@ -56,7 +57,7 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<ProductoListadoDtoOutput>>> ObtenerTodos()
+        public async Task<ActionResult<List<ProductoListadoResponse>>> ObtenerTodos()
         {
             try
             {
@@ -69,7 +70,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProductoDetalleDtoOutput>> ObtenerPorId(int id)
+        public async Task<ActionResult<ProductoResponse>> ObtenerPorId(int id)
         {
             try
             {
@@ -79,9 +80,9 @@ namespace API.Controllers
                     ? null
                     : $"{Request.Scheme}://{Request.Host}/{producto.Imagen.RutaRelativa}";
 
-                ImagenDtoOutput? imagenDto = producto.Imagen is null
+                ProductoImagenResponse? imagenDto = producto.Imagen is null
                     ? null
-                    : new ImagenDtoOutput(
+                    : new ProductoImagenResponse(
                         producto.Imagen.Id,
                         producto.Imagen.NombreOriginal,
                         imagenUrl!,
@@ -89,7 +90,7 @@ namespace API.Controllers
                         producto.Imagen.TamanoBytes,
                         producto.Imagen.FechaCreacion);
 
-                ProductoDetalleDtoOutput dto = new ProductoDetalleDtoOutput(
+                ProductoResponse dto = new ProductoResponse(
                     producto.Id,
                     producto.Nombre,
                     producto.PrecioCompra,
@@ -112,11 +113,12 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ProductoListadoDtoOutput>> Crear(CrearProductoDtoInput dto)
+        [Authorize(Roles = "Administrador")]
+        public async Task<ActionResult<ProductoListadoResponse>> Crear(CrearProductoRequest dto)
         {
             try
             {
-                ProductoListadoDtoOutput producto = await _productoService.Crear(dto);
+                ProductoListadoResponse producto = await _productoService.Crear(dto);
                 return CreatedAtAction(nameof(ObtenerPorId), new { id = producto.Id }, producto);
             }
             catch (DatosLlegaronErradosException e)
@@ -134,7 +136,8 @@ namespace API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Actualizar(int id, ActualizarProductoDtoInput dto)
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> Actualizar(int id, ActualizarProductoRequest dto)
         {
             try
             {
@@ -156,6 +159,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Eliminar(int id)
         {
             try

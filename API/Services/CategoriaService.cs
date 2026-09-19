@@ -1,10 +1,11 @@
 ﻿using System.Data.Common;
-using API.DTOs.Input;
-using API.DTOs.Output;
 using API.Excepciones;
 using API.Models;
 using API.Repositories;
 using API.Utilidades;
+using TP5Programacion.Compartidas.DTO.Categoria.Request;
+using TP5Programacion.Compartidas.DTO.Categoria.Response;
+
 
 namespace API.Services
 {
@@ -15,13 +16,13 @@ namespace API.Services
         {
             _repo = repo;
         }
-        public async Task<List<CategoriaDtoOutput>> ObtenerTodas()
+        public async Task<List<CategoriaResponse>> ObtenerTodas()
         {
             try
             {
                 List<Categoria> categorias = await _repo.ObtenerTodas();
 
-                return categorias.Select(c => new CategoriaDtoOutput(
+                return categorias.Select(c => new CategoriaResponse(
                     c.Id, c.Nombre, c.Descripcion
                 )).ToList();
             }
@@ -30,7 +31,7 @@ namespace API.Services
                 throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
             }
         }
-        public async Task<CategoriaDtoOutput> ObtenerPorId(int id)
+        public async Task<CategoriaResponse> ObtenerPorId(int id)
         {
             try
             {
@@ -41,14 +42,14 @@ namespace API.Services
                     throw new RecursoNoExisteException("No existe ninguna categoría con ese id.");
                 }
 
-                return new CategoriaDtoOutput(categoria.Id, categoria.Nombre, categoria.Descripcion);
+                return new CategoriaResponse(categoria.Id, categoria.Nombre, categoria.Descripcion);
             }
             catch (DbException e)
             {
                 throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
             }
         }
-        public async Task<CategoriaDtoOutput> Crear(CrearCategoriaDtoInput dto)
+        public async Task<CategoriaResponse> Crear(CrearCategoriaRequest dto)
         {
             if (!Validaciones.EstanDatosBien(dto.Nombre, dto.Descripcion))
             {
@@ -70,14 +71,14 @@ namespace API.Services
 
                 await _repo.Crear(categoria);
 
-                return new CategoriaDtoOutput(categoria.Id, categoria.Nombre, categoria.Descripcion);
+                return new CategoriaResponse(categoria.Id, categoria.Nombre, categoria.Descripcion);
             }
             catch (DbException e)
             {
                 throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
             }
         }
-        public async Task Actualizar(int id, ActualizarCategoriaDtoInput dto)
+        public async Task Actualizar(int id, ActualizarCategoriaRequest dto)
         {
             if (!Validaciones.EstanDatosBien(dto.Nombre, dto.Descripcion))
             {

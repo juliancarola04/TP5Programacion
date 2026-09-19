@@ -1,5 +1,4 @@
-﻿using API.DTOs.Output;
-using API.Models;
+﻿using API.Models;
 
 namespace API.Repositories
 {

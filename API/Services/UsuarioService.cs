@@ -2,10 +2,9 @@
 using API.Repositories;
 using API.Utilidades;
 using API.Models;
-using API.DTOs.Input;
 using System.Data.Common;
-using API.DTOs.Output;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TP5Programacion.Compartidas.DTO.Usuario.Request;
+using TP5Programacion.Compartidas.DTO.Usuario.Response;
 
 namespace API.Services
 {
@@ -74,7 +73,7 @@ namespace API.Services
             }
         }
 
-        public async Task<UsuarioAuthDtoOutput> Actualizar(int id, UsuarioDtoInput usuarioDtoInput)
+        public async Task<ActualizarUsuarioResponse> Actualizar(int id, ActualizarUsuarioRequest actualizarUsuarioRequest)
         {
             if (Validaciones.EstanDatosBien(id) == false)
             {
@@ -91,40 +90,40 @@ namespace API.Services
                     throw new RecursoNoExisteException("No existe ningún proveedor con ese ID.");
                 }
 
-                if (usuarioDtoInput.Username != usuario.Username && Validaciones.EstanDatosBien(usuarioDtoInput.Username))
+                if (actualizarUsuarioRequest.Username != usuario.Username && Validaciones.EstanDatosBien(actualizarUsuarioRequest.Username))
                 {
-                    if (await _repo.ExistePorUsername(usuarioDtoInput.Username!))
+                    if (await _repo.ExistePorUsername(actualizarUsuarioRequest.Username!))
                     {
                         throw new RecursoExistenteException("Ya existe alguien con ese usuario.");
                     }
                     else
                     {
                         cambieAlgo = true;
-                        usuario.Username = usuarioDtoInput.Username!;
+                        usuario.Username = actualizarUsuarioRequest.Username!;
                     }
 
                 }
 
-                if (usuarioDtoInput.Email != usuario.Email && Validaciones.EstanDatosBien(usuarioDtoInput.Email))
+                if (actualizarUsuarioRequest.Email != usuario.Email && Validaciones.EstanDatosBien(actualizarUsuarioRequest.Email))
                 {
-                    if (!Validaciones.EsUnEmailValido(usuarioDtoInput.Email!))
+                    if (!Validaciones.EsUnEmailValido(actualizarUsuarioRequest.Email!))
                     {
                         throw new DatosLlegaronErradosException("El formato del E-Mail es inválido.");
                     }
 
-                    if (await _repo.ExistePorEmail(usuarioDtoInput.Email!))
+                    if (await _repo.ExistePorEmail(actualizarUsuarioRequest.Email!))
                     {
                         throw new RecursoExistenteException("Ya existe un usuario con ese E-Mail.");
                     }
 
                     cambieAlgo = true;
-                    usuario.Email = usuarioDtoInput.Email!;
+                    usuario.Email = actualizarUsuarioRequest.Email!;
                 }
 
-                if (Validaciones.EstanDatosBien(usuarioDtoInput.Password) && !BCrypt.Net.BCrypt.EnhancedVerify(usuarioDtoInput.Password, usuario.Password))
+                if (Validaciones.EstanDatosBien(actualizarUsuarioRequest.Password) && !BCrypt.Net.BCrypt.EnhancedVerify(actualizarUsuarioRequest.Password, usuario.Password))
                 {
                     cambieAlgo = true;
-                    usuario.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(usuarioDtoInput.Password);
+                    usuario.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(actualizarUsuarioRequest.Password);
                 }
 
                 if (cambieAlgo == true)
@@ -133,13 +132,9 @@ namespace API.Services
                     
                     (string token, DateTime expiracion) = _tokenService.CrearToken(usuario);
 
-                    UsuarioAuthDtoOutput usuarioDtoOutput = new UsuarioAuthDtoOutput()
-                    {
-                        Token = token,
-                        Expiracion = expiracion
-                    };
+                    ActualizarUsuarioResponse actualizarUsuarioResponse = new ActualizarUsuarioResponse(token);
 
-                    return usuarioDtoOutput;
+                    return actualizarUsuarioResponse;
                 }
                 else
                 {
@@ -178,20 +173,20 @@ namespace API.Services
             }
         }
 
-        public async Task<List<UsuarioDtoOutput>> ObtenerlosATodos()
+        public async Task<List<ObtenerUsuarioResponse>> ObtenerlosATodos()
         {
             try
             {
                 List<Usuario> usuarios = await _repo.ObtenerTodos();
                 
-                List<UsuarioDtoOutput> usuariosDtoOutputs = usuarios.Select(
-                    u => new UsuarioDtoOutput
-                    {
-                        Id = u.Id,
-                        Username = u.Username,
-                        Email = u.Email,
-                        EsAdministrador = u.EsAdministrador
-                    }).ToList();
+                List<ObtenerUsuarioResponse> usuariosDtoOutputs = usuarios.Select(
+                    u => new ObtenerUsuarioResponse
+                    (
+                        u.Id,
+                        u.Username,
+                        u.Email,
+                        u.EsAdministrador
+                    )).ToList();
                 
                 return usuariosDtoOutputs;
             }

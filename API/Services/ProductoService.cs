@@ -1,10 +1,10 @@
 ﻿using System.Data.Common;
-using API.DTOs.Input;
-using API.DTOs.Output;
 using API.Excepciones;
 using API.Models;
 using API.Repositories;
 using API.Utilidades;
+using TP5Programacion.Compartidas.DTO.Producto.Request;
+using TP5Programacion.Compartidas.DTO.Producto.Response;
 
 namespace API.Services
 {
@@ -17,13 +17,13 @@ namespace API.Services
             _repo = repo;
         }
 
-        public async Task<List<ProductoListadoDtoOutput>> ObtenerTodos()
+        public async Task<List<ProductoListadoResponse>> ObtenerTodos()
         {
             try
             {
                 List<Producto> productos = await _repo.ObtenerTodos();
 
-                return productos.Select(p => new ProductoListadoDtoOutput(
+                return productos.Select(p => new ProductoListadoResponse(
                     p.Id, p.Nombre, p.PrecioCompra, p.PrecioVenta, p.Stock, p.CategoriaId
                 )).ToList();
             }
@@ -52,7 +52,7 @@ namespace API.Services
             }
         }
 
-        public async Task<ProductoListadoDtoOutput> Crear(CrearProductoDtoInput dto)
+        public async Task<ProductoListadoResponse> Crear(CrearProductoRequest dto)
         {
             if (Validaciones.EstanDatosBien(dto.Nombre) == false)
             {
@@ -77,7 +77,7 @@ namespace API.Services
 
                 await _repo.Crear(producto);
 
-                return new ProductoListadoDtoOutput(
+                return new ProductoListadoResponse(
                     producto.Id, producto.Nombre, producto.PrecioCompra,
                     producto.PrecioVenta, producto.Stock, producto.CategoriaId);
             }
@@ -87,7 +87,7 @@ namespace API.Services
             }
         }
 
-        public async Task Actualizar(int id, ActualizarProductoDtoInput dto)
+        public async Task Actualizar(int id, ActualizarProductoRequest dto)
         {
             if (Validaciones.EstanDatosBien(dto.Nombre) == false)
             {

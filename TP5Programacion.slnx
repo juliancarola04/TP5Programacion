@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="API/API.csproj" />
+  <Project Path="TP5Programacion.Compartidas/TP5Programacion.Compartidas.csproj" />
 </Solution>
