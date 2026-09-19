@@ -1,10 +1,9 @@
-﻿using API.DTOs.Input;
-using API.DTOs.Output;
-using API.Excepciones;
+﻿using API.Excepciones;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TP5Programacion.Compartidas.DTO.Proveedor.Request;
+using TP5Programacion.Compartidas.DTO.Proveedor.Response;
 
 namespace API.Controllers
 {
@@ -20,8 +19,7 @@ namespace API.Controllers
         }
 
         [HttpGet("admin")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<ActionResult<List<ProveedorDtoOutput>>> ObtenerTodos()
+        public async Task<ActionResult<List<ObtenerProveedorResponse>>> ObtenerTodos()
         {
             try
             {
@@ -34,8 +32,7 @@ namespace API.Controllers
         }
 
         [HttpGet("admin/{id:int}")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<ActionResult<ProveedorDtoOutput>> ObtenerPorId(int id)
+        public async Task<ActionResult<ObtenerProveedorResponse>> ObtenerPorId(int id)
         {
             try
             {
@@ -53,11 +50,11 @@ namespace API.Controllers
 
         [HttpPost("admin/crear")]
         [Authorize(Roles = "Administrador")]
-        public async Task<ActionResult<ProveedorDtoOutput>> Crear(ProveedorDtoInput dto)
+        public async Task<ActionResult<CrearProveedorResponse>> Crear(CrearProveedorRequest dto)
         {
             try
             {
-                ProveedorDtoOutput proveedorDtoOutput = await _proveedorService.Crear(dto);
+                CrearProveedorResponse proveedorDtoOutput = await _proveedorService.Crear(dto);
                 return CreatedAtAction(nameof(ObtenerPorId), new { id = proveedorDtoOutput.Id }, proveedorDtoOutput);
             }
             catch (DatosLlegaronErradosException e)
@@ -75,7 +72,8 @@ namespace API.Controllers
         }
 
         [HttpPut("admin/actualizar/{id:int}")]
-        public async Task<IActionResult> Actualizar(int id, ProveedorDtoInput dto)
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> Actualizar(int id, ActualizarProveedorRequest dto)
         {
             try
             {
@@ -101,6 +99,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("admin/dardebaja/{id:int}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Eliminar(int id)
         {
             try

@@ -1,13 +1,9 @@
-using API.Data;
-using API.DTOs;
-using API.DTOs.Input;
-using API.DTOs.Output;
 using API.Excepciones;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using TP5Programacion.Compartidas.DTO.Auth.Request;
+using TP5Programacion.Compartidas.DTO.Auth.Response;
 
 namespace API.Controllers
 {
@@ -26,11 +22,11 @@ namespace API.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<LoginDtoOutput>> Login(LoginDtoInput loginDtoInput)
+        public async Task<ActionResult<LoginResponse>> Login(LoginRequest loginRequest)
         {
             try
             {
-                LoginDtoOutput? loginDtoOutput = await _loginService.Login(loginDtoInput);
+                LoginResponse? loginDtoOutput = await _loginService.Login(loginRequest);
                 return Ok(loginDtoOutput);
             }
             catch (DatosLlegaronErradosException e)
@@ -49,12 +45,12 @@ namespace API.Controllers
 
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<RegisterDtoOutput>> Register(RegisterDtoInput registerDtoInput)
+        public async Task<ActionResult<RegisterResponse>> Register(RegisterRequest registerRequest)
         {
             try
             {
-                RegisterDtoOutput? registerDtoOutput = await _registerService.Registrarse(registerDtoInput);
-                return Ok(registerDtoOutput);
+                RegisterResponse? registerResponse = await _registerService.Registrarse(registerRequest);
+                return Ok(registerResponse);
             }
             catch (DatosLlegaronErradosException e)
             {

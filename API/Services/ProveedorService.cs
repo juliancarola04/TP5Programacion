@@ -1,10 +1,10 @@
 ﻿using System.Data.Common;
-using API.DTOs.Input;
-using API.DTOs.Output;
 using API.Excepciones;
 using API.Models;
 using API.Repositories;
 using API.Utilidades;
+using TP5Programacion.Compartidas.DTO.Proveedor.Request;
+using TP5Programacion.Compartidas.DTO.Proveedor.Response;
 
 namespace API.Services;
 
@@ -17,24 +17,24 @@ public class ProveedorService
         _repo = repo;
     }
     
-    public async Task<List<ProveedorDtoOutput>> ObtenerTodos()
+    public async Task<List<ObtenerProveedorResponse>> ObtenerTodos()
     {
         try
         {
             List<Proveedor> proveedores = await _repo.ObtenerTodos();
 
-            List<ProveedorDtoOutput> proveedorDtoOutputs = proveedores.Select(
-                p => new ProveedorDtoOutput
-                {
-                    Id = p.Id,
-                    RazonSocial = p.RazonSocial,
-                    Cuit = p.CUIT,
-                    Direccion = p.Direccion,
-                    Email = p.Email,
-                    Telefono = p.Telefono
-                }).ToList();
+            List<ObtenerProveedorResponse> obtenerProveedoresResponse = proveedores.Select(
+                p => new ObtenerProveedorResponse
+                (
+                    p.Id,
+                    p.RazonSocial,
+                    p.CUIT,
+                    p.Direccion,
+                    p.Email,
+                    p.Telefono
+                )).ToList();
                 
-            return proveedorDtoOutputs;
+            return obtenerProveedoresResponse;
         }
         catch (DbException e)
         {
@@ -42,7 +42,7 @@ public class ProveedorService
         }
     }
 
-    public async Task<ProveedorDtoOutput> ObtenerPorId(int id)
+    public async Task<ObtenerProveedorResponse> ObtenerPorId(int id)
     {
         try
         {
@@ -53,18 +53,18 @@ public class ProveedorService
                 throw new RecursoNoExisteException("No existe ningún cliente con ese id.");
             }
 
-            ProveedorDtoOutput proveedorDtoOutput = new ProveedorDtoOutput
-            {
-                Id = proveedor.Id,
-                RazonSocial = proveedor.RazonSocial,
-                Cuit = proveedor.CUIT,
-                Direccion = proveedor.Direccion,
-                Email = proveedor.Email,
-                Telefono = proveedor.Telefono
+            ObtenerProveedorResponse obtenerProveedorResponse = new ObtenerProveedorResponse
+            (
+                proveedor.Id,
+                proveedor.RazonSocial,
+                proveedor.CUIT,
+                proveedor.Direccion,
+                proveedor.Email,
+                proveedor.Telefono
                 
-            };
+            );
             
-            return proveedorDtoOutput;
+            return obtenerProveedorResponse;
         }
         catch (DbException e)
         {
@@ -72,7 +72,7 @@ public class ProveedorService
         }
     }
 
-    public async Task<ProveedorDtoOutput> Crear(ProveedorDtoInput dto)
+    public async Task<CrearProveedorResponse> Crear(CrearProveedorRequest dto)
     {
         if (!Validaciones.EstanDatosBien(dto.RazonSocial, dto.Cuit, dto.Direccion, dto.Email, dto.Telefono))
         {
@@ -102,15 +102,15 @@ public class ProveedorService
 
             await _repo.Crear(proveedor);
 
-            ProveedorDtoOutput proveedorDtoOutput = new ProveedorDtoOutput
-            {
-                Id = proveedor.Id,
-                RazonSocial = proveedor.RazonSocial,
-                Cuit = proveedor.CUIT,
-                Telefono = proveedor.Telefono,
-                Email = proveedor.Email,
-                Direccion = proveedor.Direccion
-            };
+            CrearProveedorResponse proveedorDtoOutput = new CrearProveedorResponse
+            (
+                proveedor.Id,
+                proveedor.RazonSocial,
+                proveedor.CUIT,
+                proveedor.Direccion,
+                proveedor.Email,
+                proveedor.Telefono
+            );
 
             return proveedorDtoOutput;
         }
@@ -120,7 +120,7 @@ public class ProveedorService
         }
     }
 
-    public async Task Actualizar(int id, ProveedorDtoInput proveedorDtoInput)
+    public async Task Actualizar(int id, ActualizarProveedorRequest actualizarProveedorRequest)
     {
         if (Validaciones.EstanDatosBien(id) == false)
         {
@@ -137,68 +137,68 @@ public class ProveedorService
                 throw new RecursoNoExisteException("No existe ningún usuario con ese ID.");
             }
 
-            if (proveedorDtoInput.RazonSocial != proveedor.RazonSocial && Validaciones.EstanDatosBien(proveedor.RazonSocial))
+            if (actualizarProveedorRequest.RazonSocial != proveedor.RazonSocial && Validaciones.EstanDatosBien(proveedor.RazonSocial))
             {
-                if (await _repo.ExistePorRazonSocial(proveedorDtoInput.RazonSocial!))
+                if (await _repo.ExistePorRazonSocial(actualizarProveedorRequest.RazonSocial!))
                 {
                     throw new RecursoExistenteException("Ya existe alguien con esa razón social.");
                 }
                 else
                 {
                     cambieAlgo = true;
-                    proveedor.RazonSocial = proveedorDtoInput.RazonSocial!;
+                    proveedor.RazonSocial = actualizarProveedorRequest.RazonSocial!;
                 }
             }
 
-            if (proveedorDtoInput.Cuit != proveedor.CUIT && Validaciones.EstanDatosBien(proveedor.CUIT))
+            if (actualizarProveedorRequest.Cuit != proveedor.CUIT && Validaciones.EstanDatosBien(proveedor.CUIT))
             {
-                if (await _repo.ExistePorRazonSocial(proveedorDtoInput.Cuit!))
+                if (await _repo.ExistePorRazonSocial(actualizarProveedorRequest.Cuit!))
                 {
                     throw new RecursoExistenteException("Ya existe un proveedor con ese CUIT.");
                 }
                 else
                 {
                     cambieAlgo = true;
-                    proveedor.CUIT = proveedorDtoInput.Cuit!;
+                    proveedor.CUIT = actualizarProveedorRequest.Cuit!;
                 }
             }
 
-            if (proveedorDtoInput.Direccion != proveedor.Direccion && Validaciones.EstanDatosBien(proveedor.Direccion))
+            if (actualizarProveedorRequest.Direccion != proveedor.Direccion && Validaciones.EstanDatosBien(proveedor.Direccion))
             {
                 cambieAlgo = true;
-                proveedor.Direccion = proveedorDtoInput.Direccion!;
+                proveedor.Direccion = actualizarProveedorRequest.Direccion!;
             }
 
-            if (proveedorDtoInput.Email != proveedor.Email && Validaciones.EstanDatosBien(proveedorDtoInput.Email))
+            if (actualizarProveedorRequest.Email != proveedor.Email && Validaciones.EstanDatosBien(actualizarProveedorRequest.Email))
             {
-                if (!Validaciones.EsUnEmailValido(proveedorDtoInput.Email!))
+                if (!Validaciones.EsUnEmailValido(actualizarProveedorRequest.Email!))
                 {
                     throw new DatosLlegaronErradosException("El formato del E-Mail es inválido.");
                 }
 
-                if (await _repo.ExistePorEmail(proveedorDtoInput.Email!))
+                if (await _repo.ExistePorEmail(actualizarProveedorRequest.Email!))
                 {
                     throw new RecursoExistenteException("Ya existe un proveedor con ese E-Mail.");
                 }
 
                 cambieAlgo = true;
-                proveedor.Email = proveedorDtoInput.Email!;
+                proveedor.Email = actualizarProveedorRequest.Email!;
             }
 
-            if (proveedorDtoInput.Telefono != proveedor.Telefono && Validaciones.EstanDatosBien(proveedorDtoInput.Telefono))
+            if (actualizarProveedorRequest.Telefono != proveedor.Telefono && Validaciones.EstanDatosBien(actualizarProveedorRequest.Telefono))
             {
-                if (await _repo.ExistePorRazonSocial(proveedorDtoInput.Cuit!))
+                if (await _repo.ExistePorRazonSocial(actualizarProveedorRequest.Cuit!))
                 {
                     throw new RecursoExistenteException("Ya existe un proveedor con ese CUIT.");
                 }
                 else
                 {
                     cambieAlgo = true;
-                    proveedor.Telefono = proveedorDtoInput.Telefono!;
+                    proveedor.Telefono = actualizarProveedorRequest.Telefono!;
                 }
 
                 cambieAlgo = true;
-                proveedor.Email = proveedorDtoInput.Email!;
+                proveedor.Email = actualizarProveedorRequest.Email!;
             }
 
             if (cambieAlgo == true)

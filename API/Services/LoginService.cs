@@ -1,32 +1,29 @@
 ﻿using System.Data.Common;
-using API.Data;
-using API.DTOs;
-using API.DTOs.Output;
 using API.Excepciones;
 using API.Models;
 using API.Repositories;
 using API.Utilidades;
+using TP5Programacion.Compartidas.DTO.Auth.Request;
+using TP5Programacion.Compartidas.DTO.Auth.Response;
 
 namespace API.Services
 {
     public class LoginService
     {
-        private readonly ILoginRepository _repo;
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly ITokenService _tokenService;
         
-        public LoginService(ILoginRepository repo, ITokenService tokenService, IUsuarioRepository usuarioRepository)
+        public LoginService(ITokenService tokenService, IUsuarioRepository usuarioRepository)
         {
-            _repo = repo;
             _tokenService = tokenService;
             _usuarioRepository = usuarioRepository;
         }
 
 
-        public async Task<LoginDtoOutput?> Login(LoginDtoInput loginDtoInput)
+        public async Task<LoginResponse?> Login(LoginRequest loginRequest)
         {
-            string username = loginDtoInput.Username;
-            string password = loginDtoInput.Password;
+            string username = loginRequest.Username;
+            string password = loginRequest.Password;
 
             if (Validaciones.EstanDatosBien(username, password) == false)
             {
@@ -47,14 +44,10 @@ namespace API.Services
                 if (sonIguales)
                 {
                     (string token, DateTime expiracion) = _tokenService.CrearToken(usuario);
-                    
-                    LoginDtoOutput loginDtoOutput = new LoginDtoOutput()
-                    {
-                        Token = token,
-                        Expiracion = expiracion
-                    };
 
-                    return loginDtoOutput;
+                    LoginResponse loginResponse = new LoginResponse(token);
+
+                    return loginResponse;
                 }
                 else
                 {

@@ -1,10 +1,10 @@
 ﻿using System.Data.Common;
-using API.DTOs.Input;
-using API.DTOs.Output;
 using API.Excepciones;
 using API.Models;
 using API.Repositories;
 using API.Utilidades;
+using TP5Programacion.Compartidas.DTO.Cliente.Request;
+using TP5Programacion.Compartidas.DTO.Cliente.Response;
 
 namespace API.Services
 {
@@ -17,13 +17,13 @@ namespace API.Services
             _repo = repo;
         }
 
-        public async Task<List<ClienteDtoOutput>> ObtenerTodos()
+        public async Task<List<ClienteResponse>> ObtenerTodos()
         {
             try
             {
                 List<Cliente> clientes = await _repo.ObtenerTodos();
 
-                return clientes.Select(c => new ClienteDtoOutput(
+                return clientes.Select(c => new ClienteResponse(
                     c.Id, c.Nombre, c.Dni, c.Telefono, c.Email, c.Direccion
                 )).ToList();
             }
@@ -33,7 +33,7 @@ namespace API.Services
             }
         }
 
-        public async Task<ClienteDtoOutput> ObtenerPorId(int id)
+        public async Task<ClienteResponse> ObtenerPorId(int id)
         {
             try
             {
@@ -44,7 +44,7 @@ namespace API.Services
                     throw new RecursoNoExisteException("No existe ningún cliente con ese id.");
                 }
 
-                return new ClienteDtoOutput(cliente.Id, cliente.Nombre, cliente.Dni, cliente.Telefono, cliente.Email, cliente.Direccion);
+                return new ClienteResponse(cliente.Id, cliente.Nombre, cliente.Dni, cliente.Telefono, cliente.Email, cliente.Direccion);
             }
             catch (DbException e)
             {
@@ -52,7 +52,7 @@ namespace API.Services
             }
         }
 
-        public async Task<ClienteDtoOutput> Crear(CrearClienteDtoInput dto)
+        public async Task<ClienteResponse> Crear(CrearClienteRequest dto)
         {
             if (!Validaciones.EstanDatosBien(dto.Nombre, dto.Dni, dto.Telefono, dto.Email, dto.Direccion))
             {
@@ -88,7 +88,7 @@ namespace API.Services
 
                 await _repo.Crear(cliente);
 
-                return new ClienteDtoOutput(cliente.Id, cliente.Nombre, cliente.Dni, cliente.Telefono, cliente.Email, cliente.Direccion);
+                return new ClienteResponse(cliente.Id, cliente.Nombre, cliente.Dni, cliente.Telefono, cliente.Email, cliente.Direccion);
             }
             catch (DbException e)
             {
@@ -96,7 +96,7 @@ namespace API.Services
             }
         }
 
-        public async Task Actualizar(int id, ActualizarClienteDtoInput dto)
+        public async Task Actualizar(int id, ActualizarClienteRequest dto)
         {
             if (!Validaciones.EstanDatosBien(dto.Nombre, dto.Dni, dto.Telefono, dto.Email, dto.Direccion))
             {

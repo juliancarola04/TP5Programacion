@@ -1,11 +1,11 @@
 ﻿using System.Security.Claims;
-using API.DTOs.Input;
-using API.DTOs.Output;
 using API.Excepciones;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
+using TP5Programacion.Compartidas.DTO.Ingreso.Request;
+using TP5Programacion.Compartidas.DTO.Ingreso.Response;
 
 namespace API.Controllers;
 
@@ -22,7 +22,7 @@ public class IngresosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<IngresoListadoDtoOutput>>> ObtenerTodos()
+    public async Task<ActionResult<List<IngresoListadoResponse>>> ObtenerTodos()
     {
         try
         {
@@ -35,7 +35,7 @@ public class IngresosController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<IngresoDtoOutput>> ObtenerPorId(int id)
+    public async Task<ActionResult<IngresoResponse>> ObtenerPorId(int id)
     {
         try
         {
@@ -52,7 +52,8 @@ public class IngresosController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<IngresoDtoOutput>> Crear(CrearIngresoDtoInput dto)
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult<IngresoResponse>> Crear(CrearIngresoRequest dto)
     {
         string? usuarioIdClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
 
@@ -63,7 +64,7 @@ public class IngresosController : ControllerBase
 
         try
         {
-            IngresoDtoOutput ingreso = await _ingresoService.Crear(dto, usuarioId);
+            IngresoResponse ingreso = await _ingresoService.Crear(dto, usuarioId);
             return CreatedAtAction(nameof(ObtenerPorId), new { id = ingreso.Id }, ingreso);
         }
         catch (DatosLlegaronErradosException e)
@@ -81,6 +82,7 @@ public class IngresosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> Anular(int id)
     {
         try

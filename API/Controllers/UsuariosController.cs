@@ -1,13 +1,10 @@
-using API.Data;
-using API.DTOs.Input;
-using API.DTOs.Output;
 using API.Excepciones;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+using TP5Programacion.Compartidas.DTO.Usuario.Request;
+using TP5Programacion.Compartidas.DTO.Usuario.Response;
 
 namespace API.Controllers
 {
@@ -25,11 +22,11 @@ namespace API.Controllers
 
         [HttpGet]
         // [Authorize(Roles = "Administrador")] Esto para mí debería estar descomentado, pero lo dejo así por ahora así no es tan paja usarlo.
-        public async Task<ActionResult<List<UsuarioDtoOutput>>> ObtenerTodos()
+        public async Task<ActionResult<List<ObtenerUsuarioResponse>>> ObtenerTodos()
         {
             try
             {
-                List<UsuarioDtoOutput> usuarios = await _usuarioService.ObtenerlosATodos();
+                List<ObtenerUsuarioResponse> usuarios = await _usuarioService.ObtenerlosATodos();
                 return Ok(usuarios);
             }
             catch (BaseDeDatosException e)
@@ -114,7 +111,7 @@ namespace API.Controllers
         }
 
         [HttpPut("actualizar")]
-        public async Task<ActionResult<UsuarioAuthDtoOutput>> Actualizar([FromBody] UsuarioDtoInput usuarioDtoInput)
+        public async Task<ActionResult<ActualizarUsuarioResponse>> Actualizar([FromBody] ActualizarUsuarioRequest actualizarUsuarioRequest)
         {
             try
             {
@@ -125,8 +122,8 @@ namespace API.Controllers
                     return Unauthorized("No podés actualizar a este usuario.");
                 }
 
-                UsuarioAuthDtoOutput usuarioAuthDtoOutput = await _usuarioService.Actualizar(id, usuarioDtoInput);
-                return Ok(usuarioAuthDtoOutput);
+                ActualizarUsuarioResponse actualizarUsuarioResponse = await _usuarioService.Actualizar(id, actualizarUsuarioRequest);
+                return Ok(actualizarUsuarioResponse);
             }
             catch (DatosLlegaronErradosException e)
             {
@@ -171,11 +168,11 @@ namespace API.Controllers
 
         [HttpPut("admin/actualizar/{id:int}")]
         [Authorize(Roles = "Administrador")]
-        public async Task<ActionResult> ActualizarAdmin(int id, [FromBody] UsuarioDtoInput usuarioDtoInput)
+        public async Task<ActionResult> ActualizarAdmin(int id, [FromBody] ActualizarUsuarioRequest actualizarUsuarioRequest)
         {
             try
             {
-                await _usuarioService.Actualizar(id, usuarioDtoInput);
+                await _usuarioService.Actualizar(id, actualizarUsuarioRequest);
                 return Ok();
             }
             catch (DatosLlegaronErradosException e)

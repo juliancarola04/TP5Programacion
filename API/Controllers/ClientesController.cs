@@ -1,9 +1,9 @@
-﻿using API.DTOs.Input;
-using API.DTOs.Output;
-using API.Excepciones;
+﻿using API.Excepciones;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TP5Programacion.Compartidas.DTO.Cliente.Request;
+using TP5Programacion.Compartidas.DTO.Cliente.Response;
 
 namespace API.Controllers;
 
@@ -21,7 +21,7 @@ public class ClientesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ClienteDtoOutput>>> ObtenerTodos()
+    public async Task<ActionResult<List<ClienteResponse>>> ObtenerTodos()
     {
         try
         {
@@ -34,7 +34,7 @@ public class ClientesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ClienteDtoOutput>> ObtenerPorId(int id)
+    public async Task<ActionResult<ClienteResponse>> ObtenerPorId(int id)
     {
         try
         {
@@ -51,11 +51,12 @@ public class ClientesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ClienteDtoOutput>> Crear(CrearClienteDtoInput dto)
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult<ClienteResponse>> Crear(CrearClienteRequest dto)
     {
         try
         {
-            ClienteDtoOutput cliente = await _clienteService.Crear(dto);
+            ClienteResponse cliente = await _clienteService.Crear(dto);
             return CreatedAtAction(nameof(ObtenerPorId), new { id = cliente.Id }, cliente);
         }
         catch (DatosLlegaronErradosException e)
@@ -73,7 +74,8 @@ public class ClientesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Actualizar(int id, ActualizarClienteDtoInput dto)
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Actualizar(int id, ActualizarClienteRequest dto)
     {
         try
         {
@@ -99,6 +101,7 @@ public class ClientesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> Eliminar(int id)
     {
         try
