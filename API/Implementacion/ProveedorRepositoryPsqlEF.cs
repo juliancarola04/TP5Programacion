@@ -22,7 +22,9 @@ public class ProveedorRepositoryPsqlEF : IProveedorRepository
 
         if (proveedorQueryParametros.Eliminado.HasValue)
         {
-            query = query.Where(u => u.Eliminado == proveedorQueryParametros.Eliminado);
+            query = query
+                .IgnoreQueryFilters()
+                .Where(p => p.Eliminado == proveedorQueryParametros.Eliminado.Value);
 
         }
 

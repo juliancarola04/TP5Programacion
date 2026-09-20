@@ -45,7 +45,9 @@ namespace API.Implementacion
             
             if (usuarioQueryParametros.Eliminado.HasValue)
             {
-                query = query.Where(u => u.Eliminado == usuarioQueryParametros.Eliminado);
+                query = query
+                    .IgnoreQueryFilters()
+                    .Where(u => u.Eliminado == usuarioQueryParametros.Eliminado.Value);
             }
 
             int totalRegistros = await query.CountAsync();

@@ -24,7 +24,7 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        // [Authorize(Roles = "Administrador")] Esto para mí debería estar descomentado, pero lo dejo así por ahora así no es tan paja usarlo.
+        [Authorize(Roles = "Administrador")]
         // {{baseURL}}/api/usuarios/?esadministrador=true ejemplo de API request para obtener solo a los administradores
         public async Task<ActionResult<PaginadoResponseDto<ObtenerUsuarioResponse>>> ObtenerTodos(
             [FromQuery] ParametroPaginacionUsuarioRequest parametros)
