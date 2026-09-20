@@ -41,16 +41,15 @@ namespace API
 
 
             builder.Services.AddSingleton<ITokenService, TokenService>();
-            builder.Services.AddScoped<IRegisterRepository, RegisterRepositoryPostgreSQL>();
-            builder.Services.AddScoped<ILoginRepository, LoginRepositoryPostgreSQL>();
-            builder.Services.AddScoped<IProductoRepository, ProductoRepositoryPostgreSQL>();
-            builder.Services.AddScoped<IImagenRepository, ImagenRepositoryPostgreSQL>();
-            builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositoryPostgreSQL>();
-            builder.Services.AddScoped<ICategoriaRepository, CategoriaRepositoryPostgreSQL>();
-            builder.Services.AddScoped<IClienteRepository, ClienteRepositoryPostgreSQL>();
-            builder.Services.AddScoped<IProveedorRepository, ProveedorRepositoryPostgreSQL>();
-            builder.Services.AddScoped<IVentaRepository, VentaRepositoryPostgreSQL>();
-            builder.Services.AddScoped<IIngresoRepository, IngresoRepositoryPostgreSQL>();
+            builder.Services.AddScoped<IRegisterRepository, RegisterRepositoryPsqlEF>();
+            builder.Services.AddScoped<IProductoRepository, ProductoRepositoryPsqlEF>();
+            builder.Services.AddScoped<IImagenRepository, ImagenRepositoryPsqlEF>();
+            builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositoryPsqlEF>();
+            builder.Services.AddScoped<ICategoriaRepository, CategoriaRepositoryPsqlEF>();
+            builder.Services.AddScoped<IClienteRepository, ClienteRepositoryPsqlEF>();
+            builder.Services.AddScoped<IProveedorRepository, ProveedorRepositoryPsqlEF>();
+            builder.Services.AddScoped<IVentaRepository, VentaRepositoryPsqlEF>();
+            builder.Services.AddScoped<IIngresoRepository, IngresoRepositoryPsqlEF>();
 
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

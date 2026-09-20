@@ -25,5 +25,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TP5Programacion.Compartidas\TP5Programacion.Compartidas.csproj" />
+  </ItemGroup>
+
 
 </Project>

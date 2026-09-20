@@ -1,9 +1,9 @@
 ﻿using System.Data.Common;
-using API.DTOs.Input;
-using API.DTOs.Output;
 using API.Excepciones;
 using API.Models;
 using API.Repositories;
+using TP5Programacion.Compartidas.DTO.Ingreso.Request;
+using TP5Programacion.Compartidas.DTO.Ingreso.Response;
 
 namespace API.Services;
 
@@ -20,13 +20,13 @@ public class IngresoService
         _proveedorRepo = proveedorRepo;
     }
 
-    public async Task<List<IngresoListadoDtoOutput>> ObtenerTodos()
+    public async Task<List<IngresoListadoResponse>> ObtenerTodos()
     {
         try
         {
             List<Ingreso> ingresos = await _repo.ObtenerTodos();
 
-            return ingresos.Select(i => new IngresoListadoDtoOutput(
+            return ingresos.Select(i => new IngresoListadoResponse(
                 i.Id, i.Fecha, i.Total, i.ProveedorId, i.Proveedor.RazonSocial, i.Anulado
             )).ToList();
         }
@@ -36,7 +36,7 @@ public class IngresoService
         }
     }
 
-    public async Task<IngresoDtoOutput> ObtenerPorId(int id)
+    public async Task<IngresoResponse> ObtenerPorId(int id)
     {
         try
         {
@@ -55,7 +55,7 @@ public class IngresoService
         }
     }
 
-    public async Task<IngresoDtoOutput> Crear(CrearIngresoDtoInput dto, int usuarioId)
+    public async Task<IngresoResponse> Crear(CrearIngresoRequest dto, int usuarioId)
     {
         if (dto.Items is null || dto.Items.Count == 0)
         {
@@ -93,7 +93,7 @@ public class IngresoService
             List<DetalleIngreso> detalles = new List<DetalleIngreso>();
             decimal total = 0;
 
-            foreach (ItemIngresoDtoInput item in dto.Items)
+            foreach (CrearIngresoItemRequest item in dto.Items)
             {
                 Producto? producto = await _productoRepo.ObtenerPorId(item.ProductoId);
 
@@ -178,9 +178,9 @@ public class IngresoService
         }
     }
 
-    private static IngresoDtoOutput MapearADto(Ingreso ingreso)
+    private static IngresoResponse MapearADto(Ingreso ingreso)
     {
-        List<DetalleIngresoDtoOutput> detalles = ingreso.DetallesIngresos.Select(d => new DetalleIngresoDtoOutput(
+        List<IngresoDetalleResponse> detalles = ingreso.DetallesIngresos.Select(d => new IngresoDetalleResponse(
             d.ProductoId,
             d.Producto.Nombre,
             d.Cantidad,
@@ -188,7 +188,7 @@ public class IngresoService
             d.PrecioUnitario * d.Cantidad
         )).ToList();
 
-        return new IngresoDtoOutput(
+        return new IngresoResponse(
             ingreso.Id,
             ingreso.Fecha,
             ingreso.Total,

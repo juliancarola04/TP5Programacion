@@ -1,10 +1,10 @@
-﻿using API.DTOs.Input;
-using API.DTOs.Output;
-using API.Excepciones;
+﻿using API.Excepciones;
 using API.Models;
 using API.Repositories;
 using API.Utilidades;
 using System.Data.Common;
+using TP5Programacion.Compartidas.DTO.Venta.Request;
+using TP5Programacion.Compartidas.DTO.Venta.Response;
 
 namespace API.Services
 {
@@ -20,13 +20,13 @@ namespace API.Services
             _productoRepo = productoRepo;
             _clienteRepo = clienteRepo;
         }
-        public async Task<List<VentaListadoDtoOutput>> ObtenerTodas()
+        public async Task<List<VentaListadoResponse>> ObtenerTodas()
         {
             try
             {
                 List<Venta> ventas = await _repo.ObtenerTodas();
 
-                return ventas.Select(v => new VentaListadoDtoOutput(
+                return ventas.Select(v => new VentaListadoResponse(
                     v.Id, v.Fecha, v.Total, v.ClienteId, v.Cliente.Nombre, v.Anulada
                 )).ToList();
             }
@@ -35,7 +35,7 @@ namespace API.Services
                 throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
             }
         }
-        public async Task<VentaDtoOutput> ObtenerPorId(int id)
+        public async Task<VentaResponse> ObtenerPorId(int id)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace API.Services
                 throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
             }
         }
-        public async Task<VentaDtoOutput> Crear(CrearVentaDtoInput dto, int usuarioId)
+        public async Task<VentaResponse> Crear(CrearVentaRequest dto, int usuarioId)
         {
             if (dto.Items is null || dto.Items.Count == 0)
             {
@@ -130,9 +130,9 @@ namespace API.Services
                 throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
             }
         }
-        private static VentaDtoOutput MapearADto(Venta venta)
+        private static VentaResponse MapearADto(Venta venta)
         {
-            List<DetalleVentaDtoOutput> detalles = venta.DetallesVentas.Select(d => new DetalleVentaDtoOutput(
+            List<VentaDetalleResponse> detalles = venta.DetallesVentas.Select(d => new VentaDetalleResponse(
                 d.ProductoId,
                 d.Producto.Nombre,
                 d.Cantidad,
@@ -140,7 +140,7 @@ namespace API.Services
                 d.PrecioUnitario * d.Cantidad
             )).ToList();
 
-            return new VentaDtoOutput(
+            return new VentaResponse(
                 venta.Id,
                 venta.Fecha,
                 venta.Total,

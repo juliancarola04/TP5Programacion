@@ -1,12 +1,10 @@
 ﻿using System.Data.Common;
-using System.Linq.Expressions;
-using API.DTOs.Input;
-using API.DTOs.Output;
 using API.Excepciones;
 using API.Models;
 using API.Repositories;
 using API.Utilidades;
-
+using TP5Programacion.Compartidas.DTO.Auth.Response;
+using TP5Programacion.Compartidas.DTO.Auth.Request;
 namespace API.Services
 {
     public class RegisterService
@@ -23,15 +21,20 @@ namespace API.Services
             _tokenService = tokenService;
         }
 
-        public async Task<RegisterDtoOutput?> Registrarse(RegisterDtoInput registerDtoInput)
+        public async Task<RegisterResponse?> Registrarse(RegisterRequest registerRequest)
         {
-            string username = registerDtoInput.Username.Trim();
-            string password = registerDtoInput.Password.Trim();
-            string email = registerDtoInput.Email.Trim();
+            string username = registerRequest.Username.Trim();
+            string password = registerRequest.Password.Trim();
+            string email = registerRequest.Email.Trim();
 
             if (Validaciones.EstanDatosBien(username, password, email) == false)
             {
                 throw new DatosLlegaronErradosException("Alguno de los datos llegó vacío.");
+            }
+            
+            if (!Validaciones.EsUnEmailValido(email))
+            {
+                throw new DatosLlegaronErradosException("El formato del E-Mail es inválido.");
             }
 
             try
@@ -64,11 +67,7 @@ namespace API.Services
 
                 (string token, DateTime expiracion) = _tokenService.CrearToken(usuario);
 
-                RegisterDtoOutput registerDtoOutput = new RegisterDtoOutput()
-                {
-                    Token = token,
-                    Expiracion = expiracion
-                };
+                RegisterResponse registerDtoOutput = new RegisterResponse(token);
 
                 return registerDtoOutput;
             }

@@ -1,9 +1,9 @@
-﻿using API.DTOs.Input;
-using API.DTOs.Output;
-using API.Excepciones;
+﻿using API.Excepciones;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TP5Programacion.Compartidas.DTO.Categoria.Request;
+using TP5Programacion.Compartidas.DTO.Categoria.Response;
 
 namespace API.Controllers;
 
@@ -20,7 +20,7 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<CategoriaDtoOutput>>> ObtenerTodas()
+    public async Task<ActionResult<List<CategoriaResponse>>> ObtenerTodas()
     {
         try
         {
@@ -33,7 +33,7 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CategoriaDtoOutput>> ObtenerPorId(int id)
+    public async Task<ActionResult<CategoriaResponse>> ObtenerPorId(int id)
     {
         try
         {
@@ -50,11 +50,12 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CategoriaDtoOutput>> Crear(CrearCategoriaDtoInput dto)
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult<CategoriaResponse>> Crear(CrearCategoriaRequest dto)
     {
         try
         {
-            CategoriaDtoOutput categoria = await _categoriaService.Crear(dto);
+            CategoriaResponse categoria = await _categoriaService.Crear(dto);
             return CreatedAtAction(nameof(ObtenerPorId), new { id = categoria.Id }, categoria);
         }
         catch (DatosLlegaronErradosException e)
@@ -72,7 +73,8 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Actualizar(int id, ActualizarCategoriaDtoInput dto)
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Actualizar(int id, ActualizarCategoriaRequest dto)
     {
         try
         {
@@ -94,6 +96,7 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> Eliminar(int id)
     {
         try

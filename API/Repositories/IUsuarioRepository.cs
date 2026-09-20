@@ -1,5 +1,6 @@
-﻿using API.DTOs.Output;
-using API.Models;
+﻿using API.Models;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.UsuarioQuery;
 
 namespace API.Repositories
 {
@@ -10,7 +11,7 @@ namespace API.Repositories
         Task<Usuario?> BuscarPorUsername(string username);
         Task<Usuario?> BuscarPorId(int id);
         Task DarDeBaja(Usuario usuario);
-        Task<List<Usuario>> ObtenerTodos();
+        Task<PaginadoResponse<Usuario>> ObtenerTodos(UsuarioQueryParametros usuarioQueryParametros);
         Task Actualizar(Usuario usuario);
     }
 }
