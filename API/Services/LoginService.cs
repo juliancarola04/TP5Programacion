@@ -22,8 +22,8 @@ namespace API.Services
 
         public async Task<LoginResponse?> Login(LoginRequest loginRequest)
         {
-            string username = loginRequest.Username;
-            string password = loginRequest.Password;
+            string username = loginRequest.Username.Trim();
+            string password = loginRequest.Password.Trim();
 
             if (Validaciones.EstanDatosBien(username, password) == false)
             {
