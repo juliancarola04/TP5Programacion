@@ -1,9 +1,13 @@
 ﻿using API.Excepciones;
+using API.Models.ModeloAuxiliar;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Usuario;
+using TP5Programacion.Compartidas.DTO.Paginado.Response;
 using TP5Programacion.Compartidas.DTO.Proveedor.Request;
 using TP5Programacion.Compartidas.DTO.Proveedor.Response;
+using TP5Programacion.Compartidas.DTO.Usuario.Response;
 
 namespace API.Controllers
 {
@@ -19,11 +23,19 @@ namespace API.Controllers
         }
 
         [HttpGet("admin")]
-        public async Task<ActionResult<List<ObtenerProveedorResponse>>> ObtenerTodos()
+        [Authorize(Roles = "Administrador")]
+        public async Task<ActionResult<PaginadoResponseDto<ObtenerProveedorResponse>>> ObtenerTodos(
+                [FromQuery] ParametroPaginacionProveedorRequest parametros)
         {
             try
             {
-                return Ok(await _proveedorService.ObtenerTodos());
+                PaginadoResponse<ObtenerProveedorResponse> proveedores = await _proveedorService.ObtenerTodos(parametros);
+                
+                PaginadoResponseDto<ObtenerProveedorResponse> paginadoResponseDto = new PaginadoResponseDto<ObtenerProveedorResponse>(proveedores.NumeroPagina,
+                    proveedores.TamanoPagina, proveedores.TotalRegistros, proveedores.TotalPaginas, proveedores.TienePaginaAnterior,
+                    proveedores.TienePaginaPosterior, proveedores.Datos);
+                
+                return Ok(paginadoResponseDto);
             }
             catch (BaseDeDatosException e)
             {
@@ -32,6 +44,7 @@ namespace API.Controllers
         }
 
         [HttpGet("admin/{id:int}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<ActionResult<ObtenerProveedorResponse>> ObtenerPorId(int id)
         {
             try

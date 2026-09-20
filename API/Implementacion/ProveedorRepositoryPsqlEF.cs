@@ -1,5 +1,7 @@
 ﻿using API.Data;
 using API.Models;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.Query.Proveedor;
 using API.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,9 +16,39 @@ public class ProveedorRepositoryPsqlEF : IProveedorRepository
         _dataContext = dataContext;
     }
     
-    public async Task<List<Proveedor>> ObtenerTodos()
+    public async Task<PaginadoResponse<Proveedor>> ObtenerTodos(ProveedorQueryParametros proveedorQueryParametros)
     {
-        return await _dataContext.Proveedores.ToListAsync();
+        IQueryable<Proveedor> query = _dataContext.Proveedores.AsNoTracking().AsQueryable();
+
+        if (proveedorQueryParametros.Eliminado.HasValue)
+        {
+            query = query.Where(u => u.Eliminado == proveedorQueryParametros.Eliminado);
+
+        }
+
+        // chequeamos si quiere que sea descendiente
+        bool descendente = proveedorQueryParametros.Direccion?.Equals("desc", StringComparison.OrdinalIgnoreCase) ==
+                            true;
+        if (!string.IsNullOrWhiteSpace(proveedorQueryParametros.Buscar))
+        {
+            query = query.Where(p => p.RazonSocial.ToLower().Contains(proveedorQueryParametros.Buscar));
+        }
+
+        query = proveedorQueryParametros.OrdenarPor?.ToLower() switch
+        {
+            "razonsocial" => descendente
+                ? query.OrderByDescending(p => p.RazonSocial).ThenBy(p => p.Id)
+                : query.OrderBy(p => p.RazonSocial).ThenBy(p => p.Id),
+            _ => query.OrderBy(p => p.Id) // Se va a ordenar por defecto por el ID.
+        };
+        
+        int totalRegistros = await query.CountAsync();
+        
+        List<Proveedor> proveedores = await query
+            .Skip((proveedorQueryParametros.NumeroPagina - 1) * proveedorQueryParametros.TamanoPagina)
+            .Take(proveedorQueryParametros.TamanoPagina).ToListAsync();
+        
+        return new PaginadoResponse<Proveedor>(proveedores, proveedorQueryParametros.NumeroPagina, proveedorQueryParametros.TamanoPagina, totalRegistros);
     }
 
     public async Task<Proveedor?> BuscarPorId(int id)

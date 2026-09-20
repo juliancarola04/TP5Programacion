@@ -1,8 +1,11 @@
 ﻿using System.Data.Common;
 using API.Excepciones;
 using API.Models;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.Query.Proveedor;
 using API.Repositories;
 using API.Utilidades;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Usuario;
 using TP5Programacion.Compartidas.DTO.Proveedor.Request;
 using TP5Programacion.Compartidas.DTO.Proveedor.Response;
 
@@ -17,13 +20,45 @@ public class ProveedorService
         _repo = repo;
     }
     
-    public async Task<List<ObtenerProveedorResponse>> ObtenerTodos()
+    public async Task<PaginadoResponse<ObtenerProveedorResponse>> ObtenerTodos(ParametroPaginacionProveedorRequest parametros)
     {
         try
         {
-            List<Proveedor> proveedores = await _repo.ObtenerTodos();
+            int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
+                ? 1
+                : parametros.NumeroPagina.Value;
 
-            List<ObtenerProveedorResponse> obtenerProveedoresResponse = proveedores.Select(
+            int tamanoPagina = parametros.TamanoPagina is null || parametros.TamanoPagina < 1
+                ? 20
+                : parametros.TamanoPagina > 50 ? 50 : parametros.TamanoPagina.Value;
+
+            bool? eliminado = parametros.Eliminado;
+
+            string? direccion =
+                string.IsNullOrWhiteSpace(parametros.Direccion) &&
+                parametros.Direccion?.ToLower() is not ("asc" or "desc")
+                    ? "desc"
+                    : parametros.Direccion;
+            
+            string? buscar = parametros.Buscar?.Trim().ToLower();
+            
+            string? ordenarPor = string.IsNullOrWhiteSpace(parametros.OrdenarPor) ? null : parametros.OrdenarPor;
+            
+            
+            ProveedorQueryParametros proveedorQueryParametros = new ProveedorQueryParametros
+            {
+                NumeroPagina = numeroPagina,
+                TamanoPagina = tamanoPagina,
+                Eliminado = eliminado,
+                Buscar = buscar,
+                OrdenarPor = ordenarPor,
+                Direccion = direccion
+            };
+            
+            PaginadoResponse<Proveedor> resultado = await _repo.ObtenerTodos(proveedorQueryParametros);
+
+            
+            List<ObtenerProveedorResponse> obtenerProveedoresResponse = resultado.Datos.Select(
                 p => new ObtenerProveedorResponse
                 (
                     p.Id,
@@ -34,7 +69,12 @@ public class ProveedorService
                     p.Telefono
                 )).ToList();
                 
-            return obtenerProveedoresResponse;
+            return new PaginadoResponse<ObtenerProveedorResponse>(
+                obtenerProveedoresResponse,
+                resultado.NumeroPagina,
+                resultado.TamanoPagina,
+                resultado.TotalRegistros
+            );
         }
         catch (DbException e)
         {
@@ -77,6 +117,11 @@ public class ProveedorService
         if (!Validaciones.EstanDatosBien(dto.RazonSocial, dto.Cuit, dto.Direccion, dto.Email, dto.Telefono))
         {
             throw new DatosLlegaronErradosException("Todos los campos del proveedor son obligatorios.");
+        }
+        
+        if (!Validaciones.EsUnEmailValido(dto.Email))
+        {
+            throw new DatosLlegaronErradosException("El formato del E-Mail es inválido.");
         }
 
         try

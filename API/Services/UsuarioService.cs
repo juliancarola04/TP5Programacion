@@ -185,8 +185,8 @@ namespace API.Services
                     : parametros.NumeroPagina.Value;
 
                 int tamanoPagina = parametros.TamanoPagina is null || parametros.TamanoPagina < 1
-                    ? 50
-                    : parametros.TamanoPagina.Value;
+                    ? 20
+                    : parametros.TamanoPagina > 50 ? 50 : parametros.TamanoPagina.Value;
 
                 bool? eliminado = parametros.Eliminado;
                 bool? esAdministrador = parametros.EsAdministrador;
