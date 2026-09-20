@@ -5,6 +5,9 @@ using API.Repositories;
 using API.Utilidades;
 using TP5Programacion.Compartidas.DTO.Producto.Request;
 using TP5Programacion.Compartidas.DTO.Producto.Response;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.Query.Producto;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Producto;
 
 namespace API.Services
 {
@@ -17,15 +20,52 @@ namespace API.Services
             _repo = repo;
         }
 
-        public async Task<List<ProductoListadoResponse>> ObtenerTodos()
+        public async Task<PaginadoResponse<ProductoListadoResponse>> ObtenerTodos(ParametroPaginacionProductoRequest parametros)
         {
             try
             {
-                List<Producto> productos = await _repo.ObtenerTodos();
+                int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
+                    ? 1
+                    : parametros.NumeroPagina.Value;
 
-                return productos.Select(p => new ProductoListadoResponse(
+                int tamanoPagina = parametros.TamanoPagina is null || parametros.TamanoPagina < 1
+                    ? 20
+                    : parametros.TamanoPagina > 50 ? 50 : parametros.TamanoPagina.Value;
+
+                int? categoriaId = parametros.CategoriaId;
+
+                string? direccion =
+                    string.IsNullOrWhiteSpace(parametros.Direccion) &&
+                    parametros.Direccion?.ToLower() is not ("asc" or "desc")
+                        ? "desc"
+                        : parametros.Direccion;
+
+                string? buscar = parametros.Buscar?.Trim().ToLower();
+
+                string? ordenarPor = string.IsNullOrWhiteSpace(parametros.OrdenarPor) ? null : parametros.OrdenarPor;
+
+                ProductoQueryParametros productoQueryParametros = new ProductoQueryParametros
+                {
+                    NumeroPagina = numeroPagina,
+                    TamanoPagina = tamanoPagina,
+                    CategoriaId = categoriaId,
+                    Buscar = buscar,
+                    OrdenarPor = ordenarPor,
+                    Direccion = direccion
+                };
+
+                PaginadoResponse<Producto> resultado = await _repo.ObtenerTodos(productoQueryParametros);
+
+                List<ProductoListadoResponse> productos = resultado.Datos.Select(p => new ProductoListadoResponse(
                     p.Id, p.Nombre, p.PrecioCompra, p.PrecioVenta, p.Stock, p.CategoriaId
                 )).ToList();
+
+                return new PaginadoResponse<ProductoListadoResponse>(
+                    productos,
+                    resultado.NumeroPagina,
+                    resultado.TamanoPagina,
+                    resultado.TotalRegistros
+                );
             }
             catch (DbException e)
             {

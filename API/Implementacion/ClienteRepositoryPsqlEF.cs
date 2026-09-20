@@ -1,5 +1,7 @@
 ﻿using API.Data;
 using API.Models;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.Query.Cliente;
 using API.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,11 +16,31 @@ public class ClienteRepositoryPsqlEF : IClienteRepository
         _dataContext = dataContext;
     }
 
-    public async Task<List<Cliente>> ObtenerTodos()
+    public async Task<PaginadoResponse<Cliente>> ObtenerTodos(ClienteQueryParametros parametros)
     {
-        return await _dataContext.Clientes
-            .AsNoTracking()
+        IQueryable<Cliente> query = _dataContext.Clientes.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(parametros.Buscar))
+        {
+            string buscar = parametros.Buscar.ToLower();
+            query = query.Where(c => c.Nombre.ToLower().Contains(buscar) || c.Dni.Contains(buscar) || c.Email.ToLower().Contains(buscar));
+        }
+
+        bool descendente = parametros.Direccion?.Equals("desc", StringComparison.OrdinalIgnoreCase) == true;
+        query = parametros.OrdenarPor?.ToLower() switch
+        {
+            "nombre" => descendente ? query.OrderByDescending(c => c.Nombre).ThenBy(c => c.Id) : query.OrderBy(c => c.Nombre).ThenBy(c => c.Id),
+            "email" => descendente ? query.OrderByDescending(c => c.Email).ThenBy(c => c.Id) : query.OrderBy(c => c.Email).ThenBy(c => c.Id),
+            _ => descendente ? query.OrderByDescending(c => c.Id) : query.OrderBy(c => c.Id)
+        };
+
+        int totalRegistros = await query.CountAsync();
+        List<Cliente> clientes = await query
+            .Skip((parametros.NumeroPagina - 1) * parametros.TamanoPagina)
+            .Take(parametros.TamanoPagina)
             .ToListAsync();
+
+        return new PaginadoResponse<Cliente>(clientes, parametros.NumeroPagina, parametros.TamanoPagina, totalRegistros);
     }
 
     public async Task<Cliente?> ObtenerPorId(int id)

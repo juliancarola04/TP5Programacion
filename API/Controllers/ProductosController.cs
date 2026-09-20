@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using TP5Programacion.Compartidas.DTO.Producto.Request;
 using TP5Programacion.Compartidas.DTO.Producto.Response;
 
+using API.Models.ModeloAuxiliar;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Producto;
+using TP5Programacion.Compartidas.DTO.Paginado.Response;
+
 namespace API.Controllers
 {
     [Route("api/[controller]")]
@@ -57,11 +61,18 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<ProductoListadoResponse>>> ObtenerTodos()
+        public async Task<ActionResult<PaginadoResponseDto<ProductoListadoResponse>>> ObtenerTodos(
+            [FromQuery] ParametroPaginacionProductoRequest parametros)
         {
             try
             {
-                return Ok(await _productoService.ObtenerTodos());
+                PaginadoResponse<ProductoListadoResponse> productos = await _productoService.ObtenerTodos(parametros);
+
+                PaginadoResponseDto<ProductoListadoResponse> paginadoResponseDto = new PaginadoResponseDto<ProductoListadoResponse>(productos.NumeroPagina,
+                    productos.TamanoPagina, productos.TotalRegistros, productos.TotalPaginas, productos.TienePaginaAnterior,
+                    productos.TienePaginaPosterior, productos.Datos);
+
+                return Ok(paginadoResponseDto);
             }
             catch (BaseDeDatosException e)
             {
