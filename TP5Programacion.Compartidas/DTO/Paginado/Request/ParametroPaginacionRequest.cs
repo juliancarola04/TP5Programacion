@@ -2,7 +2,7 @@
 
 public record ParametroPaginacionRequest
 {
-    public int? NumeroPagina;
-    public int? TamanoPagina;
+    public int? NumeroPagina { get; init; }
+    public int? TamanoPagina { get; init; }
 }
     
