@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text;
 
 namespace API
@@ -14,95 +15,125 @@ namespace API
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            // 1. Bootstrap Logger: captura errores incluso antes de que la config termine de cargar.
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateBootstrapLogger();
 
+            try
+            {
+                Log.Information("Iniciando aplicación API...");
 
-            // Add services to the container.
+                var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddDbContext<Data.DataContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+                // 2. Conectar Serilog al Host, leyendo la config de appsettings.json
+                builder.Host.UseSerilog((context, services, configuration) => configuration
+                    .ReadFrom.Configuration(context.Configuration)
+                    .ReadFrom.Services(services)
+                    .Enrich.FromLogContext());
 
-            // De acá saqué todo esto. Me pareció interesante, así que lo puse.
-            // https://codewithmukesh.com/blog/options-pattern-in-aspnet-core/
-            // https://codewithmukesh.com/blog/jwt-authentication-in-aspnet-core/
-            builder.Services.AddOptions<JwtSettings>()
-                .BindConfiguration("JwtSettings");
+                builder.Services.AddDbContext<Data.DataContext>(options =>
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddScoped<LoginService>();
-            builder.Services.AddScoped<RegisterService>();
-            builder.Services.AddScoped<ProductoService>();
-            builder.Services.AddScoped<ImagenService>();
-            builder.Services.AddScoped<UsuarioService>();
-            builder.Services.AddScoped<CategoriaService>();
-            builder.Services.AddScoped<ClienteService>();
-            builder.Services.AddScoped<ProveedorService>();
-            builder.Services.AddScoped<VentaService>();
-            builder.Services.AddScoped<IngresoService>();
+                builder.Services.AddOptions<JwtSettings>()
+                    .BindConfiguration("JwtSettings");
 
+                builder.Services.AddScoped<LoginService>();
+                builder.Services.AddScoped<RegisterService>();
+                builder.Services.AddScoped<ProductoService>();
+                builder.Services.AddScoped<ImagenService>();
+                builder.Services.AddScoped<UsuarioService>();
+                builder.Services.AddScoped<CategoriaService>();
+                builder.Services.AddScoped<ClienteService>();
+                builder.Services.AddScoped<ProveedorService>();
+                builder.Services.AddScoped<VentaService>();
+                builder.Services.AddScoped<IngresoService>();
 
-            builder.Services.AddSingleton<ITokenService, TokenService>();
-            builder.Services.AddScoped<IRegisterRepository, RegisterRepositoryPsqlEF>();
-            builder.Services.AddScoped<IProductoRepository, ProductoRepositoryPsqlEF>();
-            builder.Services.AddScoped<IImagenRepository, ImagenRepositoryPsqlEF>();
-            builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositoryPsqlEF>();
-            builder.Services.AddScoped<ICategoriaRepository, CategoriaRepositoryPsqlEF>();
-            builder.Services.AddScoped<IClienteRepository, ClienteRepositoryPsqlEF>();
-            builder.Services.AddScoped<IProveedorRepository, ProveedorRepositoryPsqlEF>();
-            builder.Services.AddScoped<IVentaRepository, VentaRepositoryPsqlEF>();
-            builder.Services.AddScoped<IIngresoRepository, IngresoRepositoryPsqlEF>();
+                builder.Services.AddSingleton<ITokenService, TokenService>();
+                builder.Services.AddScoped<IRegisterRepository, RegisterRepositoryPsqlEF>();
+                builder.Services.AddScoped<IProductoRepository, ProductoRepositoryPsqlEF>();
+                builder.Services.AddScoped<IImagenRepository, ImagenRepositoryPsqlEF>();
+                builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositoryPsqlEF>();
+                builder.Services.AddScoped<ICategoriaRepository, CategoriaRepositoryPsqlEF>();
+                builder.Services.AddScoped<IClienteRepository, ClienteRepositoryPsqlEF>();
+                builder.Services.AddScoped<IProveedorRepository, ProveedorRepositoryPsqlEF>();
+                builder.Services.AddScoped<IVentaRepository, VentaRepositoryPsqlEF>();
+                builder.Services.AddScoped<IIngresoRepository, IngresoRepositoryPsqlEF>();
 
-
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer();
-
-            builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-                .Configure<IOptions<JwtSettings>>((options, jwtSettingsOptions) =>
+                builder.Services.AddCors(options =>
                 {
-                    var jwtSettings = jwtSettingsOptions.Value;
-
-                    options.MapInboundClaims = false;
-                    options.TokenValidationParameters = new TokenValidationParameters
+                    options.AddPolicy("PermitirTodo", policy =>
                     {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtSettings.Issuer,
-                        ValidAudience = jwtSettings.Audience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
-                        ClockSkew = TimeSpan.Zero
-                    };
+                        policy.AllowAnyOrigin()
+                              .AllowAnyMethod()
+                              .AllowAnyHeader();
+                    });
                 });
 
-            builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+                builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddJwtBearer();
 
-            var app = builder.Build();
-            var uploadsPath = Path.Combine(
-            app.Environment.WebRootPath
-            ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
+                builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+                    .Configure<IOptions<JwtSettings>>((options, jwtSettingsOptions) =>
+                    {
+                        var jwtSettings = jwtSettingsOptions.Value;
 
-            if (!Directory.Exists(uploadsPath))
-            {
-                Directory.CreateDirectory(uploadsPath);
+                        options.MapInboundClaims = false;
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidateAudience = true,
+                            ValidateLifetime = true,
+                            ValidateIssuerSigningKey = true,
+                            ValidIssuer = jwtSettings.Issuer,
+                            ValidAudience = jwtSettings.Audience,
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+                            ClockSkew = TimeSpan.Zero
+                        };
+                    });
+
+                builder.Services.AddControllers();
+                builder.Services.AddOpenApi();
+
+                var app = builder.Build();
+                var uploadsPath = Path.Combine(
+                    app.Environment.WebRootPath
+                    ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
+
+                if (!Directory.Exists(uploadsPath))
+                {
+                    Directory.CreateDirectory(uploadsPath);
+                }
+
+                // 3. Auditoría HTTP automática de Serilog
+                app.UseSerilogRequestLogging(options =>
+                {
+                    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} respondió {StatusCode} en {Elapsed:0.0000} ms";
+                });
+
+                if (app.Environment.IsDevelopment())
+                {
+                    app.MapOpenApi();
+                }
+
+                app.UseHttpsRedirection();
+                app.UseStaticFiles();
+                app.UseCors("PermitirTodo");
+                app.UseAuthentication();
+                app.UseAuthorization();
+
+                app.MapControllers();
+
+                app.Run();
             }
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            catch (Exception ex)
             {
-                app.MapOpenApi();
+                Log.Fatal(ex, "Fallo crítico no controlado durante el inicio de la aplicación.");
             }
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseAuthentication();
-            app.UseAuthorization();
-            
-            app.MapControllers();
-
-            app.Run();
-
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
     }
 }
