@@ -3,6 +3,9 @@ using API.Repositories;
 using API.Utilidades;
 using API.Models;
 using System.Data.Common;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.UsuarioQuery;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Usuario;
 using TP5Programacion.Compartidas.DTO.Usuario.Request;
 using TP5Programacion.Compartidas.DTO.Usuario.Response;
 
@@ -173,13 +176,32 @@ namespace API.Services
             }
         }
 
-        public async Task<List<ObtenerUsuarioResponse>> ObtenerlosATodos()
+        public async Task<PaginadoResponse<ObtenerUsuarioResponse>> ObtenerlosATodos(ParametroPaginacionUsuarioRequest parametros)
         {
             try
             {
-                List<Usuario> usuarios = await _repo.ObtenerTodos();
+                int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
+                    ? 1
+                    : parametros.NumeroPagina.Value;
+
+                int tamanoPagina = parametros.TamanoPagina is null || parametros.TamanoPagina < 1
+                    ? 50
+                    : parametros.TamanoPagina.Value;
+
+                bool? eliminado = parametros.Eliminado;
+                bool? esAdministrador = parametros.EsAdministrador;
+
+                UsuarioQueryParametros usuarioQueryParametros = new UsuarioQueryParametros
+                {
+                    NumeroPagina = numeroPagina,
+                    TamanoPagina = tamanoPagina,
+                    Eliminado = eliminado,
+                    EsAdministrador = esAdministrador
+                };
                 
-                List<ObtenerUsuarioResponse> usuariosDtoOutputs = usuarios.Select(
+                PaginadoResponse<Usuario> resultado = await _repo.ObtenerTodos(usuarioQueryParametros);
+                
+                List<ObtenerUsuarioResponse> obtenerUsuarioResponse = resultado.Datos.Select(
                     u => new ObtenerUsuarioResponse
                     (
                         u.Id,
@@ -188,7 +210,12 @@ namespace API.Services
                         u.EsAdministrador
                     )).ToList();
                 
-                return usuariosDtoOutputs;
+                return new PaginadoResponse<ObtenerUsuarioResponse>(
+                    obtenerUsuarioResponse,
+                    resultado.PaginaActual,
+                    resultado.TamanoPagina,
+                    resultado.TotalRegistros
+                    );
             }
             catch (DbException)
             {
