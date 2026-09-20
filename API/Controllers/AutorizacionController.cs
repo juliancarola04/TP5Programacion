@@ -58,7 +58,7 @@ namespace API.Controllers
             }
             catch (RecursoExistenteException e)
             {
-                return NotFound(e.Message);
+                return Conflict(e.Message);
             }
             catch (BaseDeDatosException e)
             {

@@ -182,30 +182,27 @@ public class ProveedorService
                 throw new RecursoNoExisteException("No existe ningún usuario con ese ID.");
             }
 
-            if (actualizarProveedorRequest.RazonSocial != proveedor.RazonSocial && Validaciones.EstanDatosBien(proveedor.RazonSocial))
+            if (actualizarProveedorRequest.RazonSocial != proveedor.RazonSocial && Validaciones.EstanDatosBien(actualizarProveedorRequest.RazonSocial))
             {
                 if (await _repo.ExistePorRazonSocial(actualizarProveedorRequest.RazonSocial!))
                 {
                     throw new RecursoExistenteException("Ya existe alguien con esa razón social.");
                 }
-                else
-                {
-                    cambieAlgo = true;
-                    proveedor.RazonSocial = actualizarProveedorRequest.RazonSocial!;
-                }
+
+                cambieAlgo = true;
+                proveedor.RazonSocial = actualizarProveedorRequest.RazonSocial!;
             }
 
-            if (actualizarProveedorRequest.Cuit != proveedor.CUIT && Validaciones.EstanDatosBien(proveedor.CUIT))
+            if (actualizarProveedorRequest.Cuit != proveedor.CUIT && Validaciones.EstanDatosBien(actualizarProveedorRequest.Cuit))
             {
                 if (await _repo.ExistePorRazonSocial(actualizarProveedorRequest.Cuit!))
                 {
                     throw new RecursoExistenteException("Ya existe un proveedor con ese CUIT.");
                 }
-                else
-                {
-                    cambieAlgo = true;
-                    proveedor.CUIT = actualizarProveedorRequest.Cuit!;
-                }
+                
+                cambieAlgo = true;
+                proveedor.CUIT = actualizarProveedorRequest.Cuit!;
+                
             }
 
             if (actualizarProveedorRequest.Direccion != proveedor.Direccion && Validaciones.EstanDatosBien(proveedor.Direccion))
@@ -236,17 +233,13 @@ public class ProveedorService
                 {
                     throw new RecursoExistenteException("Ya existe un proveedor con ese CUIT.");
                 }
-                else
-                {
-                    cambieAlgo = true;
-                    proveedor.Telefono = actualizarProveedorRequest.Telefono!;
-                }
-
+                
                 cambieAlgo = true;
-                proveedor.Email = actualizarProveedorRequest.Email!;
+                proveedor.Telefono = actualizarProveedorRequest.Telefono!;
+                    
             }
 
-            if (cambieAlgo == true)
+            if (cambieAlgo)
             {
                 await _repo.Actualizar(proveedor);
             }
