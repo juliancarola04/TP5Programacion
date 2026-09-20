@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using API.Models.ModeloAuxiliar;
 using TP5Programacion.Compartidas.DTO.Paginado.Request.Usuario;
+using TP5Programacion.Compartidas.DTO.Paginado.Response;
 using TP5Programacion.Compartidas.DTO.Usuario.Request;
 using TP5Programacion.Compartidas.DTO.Usuario.Response;
 
@@ -25,13 +26,18 @@ namespace API.Controllers
         [HttpGet]
         // [Authorize(Roles = "Administrador")] Esto para mí debería estar descomentado, pero lo dejo así por ahora así no es tan paja usarlo.
         // {{baseURL}}/api/usuarios/?esadministrador=true ejemplo de API request para obtener solo a los administradores
-        public async Task<ActionResult<PaginadoResponse<ObtenerUsuarioResponse>>> ObtenerTodos(
+        public async Task<ActionResult<PaginadoResponseDto<ObtenerUsuarioResponse>>> ObtenerTodos(
             [FromQuery] ParametroPaginacionUsuarioRequest parametros)
         {
             try
             {
                 PaginadoResponse<ObtenerUsuarioResponse> usuarios = await _usuarioService.ObtenerlosATodos(parametros);
-                return Ok(usuarios);
+                
+                PaginadoResponseDto<ObtenerUsuarioResponse> paginadoResponseDto = new PaginadoResponseDto<ObtenerUsuarioResponse>(usuarios.NumeroPagina,
+                    usuarios.TamanoPagina, usuarios.TotalRegistros, usuarios.TotalPaginas, usuarios.TienePaginaAnterior,
+                    usuarios.TienePaginaPosterior, usuarios.Datos);
+                
+                return Ok(paginadoResponseDto);
             }
             catch (BaseDeDatosException e)
             {

@@ -212,7 +212,7 @@ namespace API.Services
                 
                 return new PaginadoResponse<ObtenerUsuarioResponse>(
                     obtenerUsuarioResponse,
-                    resultado.PaginaActual,
+                    resultado.NumeroPagina,
                     resultado.TamanoPagina,
                     resultado.TotalRegistros
                     );

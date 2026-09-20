@@ -4,18 +4,18 @@
 
 public record PaginadoResponse<T>
 {
-    public int PaginaActual { get; init; }
+    public int NumeroPagina { get; init; }
     public int TamanoPagina { get; init; }
     public int TotalRegistros { get; init; }
     public int TotalPaginas { get; init; }
-    public bool TienePaginaAnterior => PaginaActual > 1;
-    public bool TienePaginaPosterior => PaginaActual < TotalPaginas;
+    public bool TienePaginaAnterior => NumeroPagina > 1;
+    public bool TienePaginaPosterior => NumeroPagina < TotalPaginas;
     public List<T> Datos { get; init; }
 
-    public PaginadoResponse(List<T> datos, int paginaActual, int tamanoPagina, int totalRegistros)
+    public PaginadoResponse(List<T> datos, int numeroPagina, int tamanoPagina, int totalRegistros)
     {
         Datos = datos;
-        PaginaActual = paginaActual;
+        NumeroPagina = numeroPagina;
         TamanoPagina = tamanoPagina;
         TotalRegistros = totalRegistros;
         TotalPaginas = (int)Math.Ceiling((decimal)totalRegistros / (decimal)tamanoPagina);
