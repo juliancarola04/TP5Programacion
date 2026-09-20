@@ -39,7 +39,7 @@ public class IngresoService
             bool? anulado = parametros.Anulado;
 
             string? direccion =
-                string.IsNullOrWhiteSpace(parametros.Direccion) &&
+                string.IsNullOrWhiteSpace(parametros.Direccion) ||
                 parametros.Direccion?.ToLower() is not ("asc" or "desc")
                     ? "desc"
                     : parametros.Direccion;

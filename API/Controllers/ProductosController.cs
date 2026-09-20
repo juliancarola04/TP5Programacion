@@ -140,6 +140,10 @@ namespace API.Controllers
             {
                 return Conflict(e.Message);
             }
+            catch (RecursoNoExisteException e)
+            {
+                return NotFound(e.Message);
+            }
             catch (BaseDeDatosException e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);

@@ -33,7 +33,7 @@ namespace API.Services
                     : parametros.TamanoPagina > 50 ? 50 : parametros.TamanoPagina.Value;
 
                 string? direccion =
-                    string.IsNullOrWhiteSpace(parametros.Direccion) &&
+                    string.IsNullOrWhiteSpace(parametros.Direccion) ||
                     parametros.Direccion?.ToLower() is not ("asc" or "desc")
                         ? "desc"
                         : parametros.Direccion;

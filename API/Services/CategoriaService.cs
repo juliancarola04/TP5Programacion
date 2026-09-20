@@ -32,7 +32,7 @@ namespace API.Services
                     : parametros.TamanoPagina > 50 ? 50 : parametros.TamanoPagina.Value;
 
                 string? direccion =
-                    string.IsNullOrWhiteSpace(parametros.Direccion) &&
+                    string.IsNullOrWhiteSpace(parametros.Direccion) ||
                     parametros.Direccion?.ToLower() is not ("asc" or "desc")
                         ? "desc"
                         : parametros.Direccion;
@@ -121,7 +121,7 @@ namespace API.Services
             {
                 throw new DatosLlegaronErradosException("El nombre y la descripción de la categoría son obligatorios.");
             }
-
+            
             try
             {
                 Categoria? categoria = await _repo.ObtenerPorId(id);
@@ -129,6 +129,11 @@ namespace API.Services
                 if (categoria is null)
                 {
                     throw new RecursoNoExisteException("No existe ninguna categoría con ese id.");
+                }
+                
+                if (categoria.Nombre != dto.Nombre && await _repo.ExistePorNombre(dto.Nombre))
+                {
+                    throw new RecursoExistenteException("Ya existe una categoría con ese nombre.");
                 }
 
                 categoria.Nombre = dto.Nombre;

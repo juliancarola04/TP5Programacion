@@ -100,6 +100,10 @@ public class CategoriasController : ControllerBase
         {
             return NotFound(e.Message);
         }
+        catch (RecursoExistenteException e)
+        {
+            return Conflict(e.Message);
+        }
         catch (BaseDeDatosException e)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);

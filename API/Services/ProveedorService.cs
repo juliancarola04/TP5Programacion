@@ -35,7 +35,7 @@ public class ProveedorService
             bool? eliminado = parametros.Eliminado;
 
             string? direccion =
-                string.IsNullOrWhiteSpace(parametros.Direccion) &&
+                string.IsNullOrWhiteSpace(parametros.Direccion) ||
                 parametros.Direccion?.ToLower() is not ("asc" or "desc")
                     ? "desc"
                     : parametros.Direccion;
@@ -195,7 +195,7 @@ public class ProveedorService
 
             if (actualizarProveedorRequest.Cuit != proveedor.CUIT && Validaciones.EstanDatosBien(actualizarProveedorRequest.Cuit))
             {
-                if (await _repo.ExistePorRazonSocial(actualizarProveedorRequest.Cuit!))
+                if (await _repo.ExistePorCuit(actualizarProveedorRequest.Cuit!))
                 {
                     throw new RecursoExistenteException("Ya existe un proveedor con ese CUIT.");
                 }
@@ -205,7 +205,7 @@ public class ProveedorService
                 
             }
 
-            if (actualizarProveedorRequest.Direccion != proveedor.Direccion && Validaciones.EstanDatosBien(proveedor.Direccion))
+            if (actualizarProveedorRequest.Direccion != proveedor.Direccion && Validaciones.EstanDatosBien(actualizarProveedorRequest.Direccion))
             {
                 cambieAlgo = true;
                 proveedor.Direccion = actualizarProveedorRequest.Direccion!;
@@ -229,7 +229,7 @@ public class ProveedorService
 
             if (actualizarProveedorRequest.Telefono != proveedor.Telefono && Validaciones.EstanDatosBien(actualizarProveedorRequest.Telefono))
             {
-                if (await _repo.ExistePorRazonSocial(actualizarProveedorRequest.Cuit!))
+                if (await _repo.ExistePorTelefono(actualizarProveedorRequest.Telefono!))
                 {
                     throw new RecursoExistenteException("Ya existe un proveedor con ese CUIT.");
                 }
