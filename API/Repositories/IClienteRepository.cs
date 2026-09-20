@@ -1,9 +1,12 @@
 ﻿using API.Models;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.Query.Cliente;
+
 namespace API.Repositories
 {
     public interface IClienteRepository
     {
-        Task<List<Cliente>> ObtenerTodos();
+        Task<PaginadoResponse<Cliente>> ObtenerTodos(ClienteQueryParametros parametros);
         Task<Cliente?> ObtenerPorId(int id);
         Task<bool> ExistePorDni(string dni);
         Task<bool> ExistePorEmail(string email);

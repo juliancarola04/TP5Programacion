@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using TP5Programacion.Compartidas.DTO.Categoria.Request;
 using TP5Programacion.Compartidas.DTO.Categoria.Response;
 
+using API.Models.ModeloAuxiliar;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Categoria;
+using TP5Programacion.Compartidas.DTO.Paginado.Response;
+
 namespace API.Controllers;
 
 [Route("api/[controller]")]
@@ -20,11 +24,18 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<CategoriaResponse>>> ObtenerTodas()
+    public async Task<ActionResult<PaginadoResponseDto<CategoriaResponse>>> ObtenerTodas(
+        [FromQuery] ParametroPaginacionCategoriaRequest parametros)
     {
         try
         {
-            return Ok(await _categoriaService.ObtenerTodas());
+            PaginadoResponse<CategoriaResponse> categorias = await _categoriaService.ObtenerTodas(parametros);
+
+            PaginadoResponseDto<CategoriaResponse> paginadoResponseDto = new PaginadoResponseDto<CategoriaResponse>(categorias.NumeroPagina,
+                categorias.TamanoPagina, categorias.TotalRegistros, categorias.TotalPaginas, categorias.TienePaginaAnterior,
+                categorias.TienePaginaPosterior, categorias.Datos);
+
+            return Ok(paginadoResponseDto);
         }
         catch (BaseDeDatosException e)
         {

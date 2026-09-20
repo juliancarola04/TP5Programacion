@@ -7,6 +7,10 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using TP5Programacion.Compartidas.DTO.Venta.Request;
 using TP5Programacion.Compartidas.DTO.Venta.Response;
 
+using API.Models.ModeloAuxiliar;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Venta;
+using TP5Programacion.Compartidas.DTO.Paginado.Response;
+
 namespace API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
@@ -19,11 +23,18 @@ public class VentasController : ControllerBase
         _ventaService = ventaService;
     }
     [HttpGet]
-    public async Task<ActionResult<List<VentaListadoResponse>>> ObtenerTodas()
+    public async Task<ActionResult<PaginadoResponseDto<VentaListadoResponse>>> ObtenerTodas(
+        [FromQuery] ParametroPaginacionVentaRequest parametros)
     {
         try
         {
-            return Ok(await _ventaService.ObtenerTodas());
+            PaginadoResponse<VentaListadoResponse> ventas = await _ventaService.ObtenerTodas(parametros);
+
+            PaginadoResponseDto<VentaListadoResponse> paginadoResponseDto = new PaginadoResponseDto<VentaListadoResponse>(ventas.NumeroPagina,
+                ventas.TamanoPagina, ventas.TotalRegistros, ventas.TotalPaginas, ventas.TienePaginaAnterior,
+                ventas.TienePaginaPosterior, ventas.Datos);
+
+            return Ok(paginadoResponseDto);
         }
         catch (BaseDeDatosException e)
         {

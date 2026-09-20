@@ -7,6 +7,10 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using TP5Programacion.Compartidas.DTO.Ingreso.Request;
 using TP5Programacion.Compartidas.DTO.Ingreso.Response;
 
+using API.Models.ModeloAuxiliar;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Ingreso;
+using TP5Programacion.Compartidas.DTO.Paginado.Response;
+
 namespace API.Controllers;
 
 [Route("api/[controller]")]
@@ -22,11 +26,18 @@ public class IngresosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<IngresoListadoResponse>>> ObtenerTodos()
+    public async Task<ActionResult<PaginadoResponseDto<IngresoListadoResponse>>> ObtenerTodos(
+        [FromQuery] ParametroPaginacionIngresoRequest parametros)
     {
         try
         {
-            return Ok(await _ingresoService.ObtenerTodos());
+            PaginadoResponse<IngresoListadoResponse> ingresos = await _ingresoService.ObtenerTodos(parametros);
+
+            PaginadoResponseDto<IngresoListadoResponse> paginadoResponseDto = new PaginadoResponseDto<IngresoListadoResponse>(ingresos.NumeroPagina,
+                ingresos.TamanoPagina, ingresos.TotalRegistros, ingresos.TotalPaginas, ingresos.TienePaginaAnterior,
+                ingresos.TienePaginaPosterior, ingresos.Datos);
+
+            return Ok(paginadoResponseDto);
         }
         catch (BaseDeDatosException e)
         {
