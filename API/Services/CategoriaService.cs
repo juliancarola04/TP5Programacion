@@ -5,6 +5,9 @@ using API.Repositories;
 using API.Utilidades;
 using TP5Programacion.Compartidas.DTO.Categoria.Request;
 using TP5Programacion.Compartidas.DTO.Categoria.Response;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.Query.Categoria;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Categoria;
 
 
 namespace API.Services
@@ -16,15 +19,49 @@ namespace API.Services
         {
             _repo = repo;
         }
-        public async Task<List<CategoriaResponse>> ObtenerTodas()
+        public async Task<PaginadoResponse<CategoriaResponse>> ObtenerTodas(ParametroPaginacionCategoriaRequest parametros)
         {
             try
             {
-                List<Categoria> categorias = await _repo.ObtenerTodas();
+                int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
+                    ? 1
+                    : parametros.NumeroPagina.Value;
 
-                return categorias.Select(c => new CategoriaResponse(
+                int tamanoPagina = parametros.TamanoPagina is null || parametros.TamanoPagina < 1
+                    ? 20
+                    : parametros.TamanoPagina > 50 ? 50 : parametros.TamanoPagina.Value;
+
+                string? direccion =
+                    string.IsNullOrWhiteSpace(parametros.Direccion) &&
+                    parametros.Direccion?.ToLower() is not ("asc" or "desc")
+                        ? "desc"
+                        : parametros.Direccion;
+
+                string? buscar = parametros.Buscar?.Trim().ToLower();
+
+                string? ordenarPor = string.IsNullOrWhiteSpace(parametros.OrdenarPor) ? null : parametros.OrdenarPor;
+
+                CategoriaQueryParametros categoriaQueryParametros = new CategoriaQueryParametros
+                {
+                    NumeroPagina = numeroPagina,
+                    TamanoPagina = tamanoPagina,
+                    Buscar = buscar,
+                    OrdenarPor = ordenarPor,
+                    Direccion = direccion
+                };
+
+                PaginadoResponse<Categoria> resultado = await _repo.ObtenerTodas(categoriaQueryParametros);
+
+                List<CategoriaResponse> categorias = resultado.Datos.Select(c => new CategoriaResponse(
                     c.Id, c.Nombre, c.Descripcion
                 )).ToList();
+
+                return new PaginadoResponse<CategoriaResponse>(
+                    categorias,
+                    resultado.NumeroPagina,
+                    resultado.TamanoPagina,
+                    resultado.TotalRegistros
+                );
             }
             catch (DbException e)
             {

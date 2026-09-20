@@ -1,5 +1,7 @@
 ﻿using API.Data;
 using API.Models;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.Query.Ingreso;
 using API.Repositories;
 using API.Services;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +17,39 @@ public class IngresoRepositoryPsqlEF : IIngresoRepository
         _dataContext = dataContext;
     }
 
-    public async Task<List<Ingreso>> ObtenerTodos()
+    public async Task<PaginadoResponse<Ingreso>> ObtenerTodos(IngresoQueryParametros parametros)
     {
-        return await _dataContext.Ingresos
+        IQueryable<Ingreso> query = _dataContext.Ingresos
             .Include(i => i.Proveedor)
-            .AsNoTracking()
-            .OrderByDescending(i => i.Fecha)
+            .AsNoTracking();
+
+        if (parametros.ProveedorId.HasValue)
+            query = query.Where(i => i.ProveedorId == parametros.ProveedorId.Value);
+
+        if (parametros.Anulado.HasValue)
+            query = query.Where(i => i.Anulado == parametros.Anulado.Value);
+
+        if (!string.IsNullOrWhiteSpace(parametros.Buscar))
+        {
+            string buscar = parametros.Buscar.ToLower();
+            query = query.Where(i => i.Proveedor.RazonSocial.ToLower().Contains(buscar));
+        }
+
+        bool descendente = parametros.Direccion?.Equals("desc", StringComparison.OrdinalIgnoreCase) != false;
+        query = parametros.OrdenarPor?.ToLower() switch
+        {
+            "total" => descendente ? query.OrderByDescending(i => i.Total).ThenByDescending(i => i.Id) : query.OrderBy(i => i.Total).ThenBy(i => i.Id),
+            "fecha" => descendente ? query.OrderByDescending(i => i.Fecha).ThenByDescending(i => i.Id) : query.OrderBy(i => i.Fecha).ThenBy(i => i.Id),
+            _ => descendente ? query.OrderByDescending(i => i.Fecha).ThenByDescending(i => i.Id) : query.OrderBy(i => i.Fecha).ThenBy(i => i.Id)
+        };
+
+        int totalRegistros = await query.CountAsync();
+        List<Ingreso> ingresos = await query
+            .Skip((parametros.NumeroPagina - 1) * parametros.TamanoPagina)
+            .Take(parametros.TamanoPagina)
             .ToListAsync();
+
+        return new PaginadoResponse<Ingreso>(ingresos, parametros.NumeroPagina, parametros.TamanoPagina, totalRegistros);
     }
 
     public async Task<Ingreso?> ObtenerPorId(int id)

@@ -5,6 +5,9 @@ using API.Utilidades;
 using System.Data.Common;
 using TP5Programacion.Compartidas.DTO.Venta.Request;
 using TP5Programacion.Compartidas.DTO.Venta.Response;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.Query.Venta;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Venta;
 
 namespace API.Services
 {
@@ -20,15 +23,54 @@ namespace API.Services
             _productoRepo = productoRepo;
             _clienteRepo = clienteRepo;
         }
-        public async Task<List<VentaListadoResponse>> ObtenerTodas()
+        public async Task<PaginadoResponse<VentaListadoResponse>> ObtenerTodas(ParametroPaginacionVentaRequest parametros)
         {
             try
             {
-                List<Venta> ventas = await _repo.ObtenerTodas();
+                int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
+                    ? 1
+                    : parametros.NumeroPagina.Value;
 
-                return ventas.Select(v => new VentaListadoResponse(
+                int tamanoPagina = parametros.TamanoPagina is null || parametros.TamanoPagina < 1
+                    ? 20
+                    : parametros.TamanoPagina > 50 ? 50 : parametros.TamanoPagina.Value;
+
+                int? clienteId = parametros.ClienteId;
+                bool? anulada = parametros.Anulada;
+
+                string? direccion =
+                    string.IsNullOrWhiteSpace(parametros.Direccion) &&
+                    parametros.Direccion?.ToLower() is not ("asc" or "desc")
+                        ? "desc"
+                        : parametros.Direccion;
+
+                string? buscar = parametros.Buscar?.Trim().ToLower();
+
+                string? ordenarPor = string.IsNullOrWhiteSpace(parametros.OrdenarPor) ? "fecha" : parametros.OrdenarPor;
+
+                VentaQueryParametros ventaQueryParametros = new VentaQueryParametros
+                {
+                    NumeroPagina = numeroPagina,
+                    TamanoPagina = tamanoPagina,
+                    ClienteId = clienteId,
+                    Anulada = anulada,
+                    Buscar = buscar,
+                    OrdenarPor = ordenarPor,
+                    Direccion = direccion
+                };
+
+                PaginadoResponse<Venta> resultado = await _repo.ObtenerTodas(ventaQueryParametros);
+
+                List<VentaListadoResponse> ventas = resultado.Datos.Select(v => new VentaListadoResponse(
                     v.Id, v.Fecha, v.Total, v.ClienteId, v.Cliente.Nombre, v.Anulada
                 )).ToList();
+
+                return new PaginadoResponse<VentaListadoResponse>(
+                    ventas,
+                    resultado.NumeroPagina,
+                    resultado.TamanoPagina,
+                    resultado.TotalRegistros
+                );
             }
             catch (DbException e)
             {

@@ -4,6 +4,9 @@ using API.Models;
 using API.Repositories;
 using TP5Programacion.Compartidas.DTO.Ingreso.Request;
 using TP5Programacion.Compartidas.DTO.Ingreso.Response;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.Query.Ingreso;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Ingreso;
 
 namespace API.Services;
 
@@ -20,15 +23,54 @@ public class IngresoService
         _proveedorRepo = proveedorRepo;
     }
 
-    public async Task<List<IngresoListadoResponse>> ObtenerTodos()
+    public async Task<PaginadoResponse<IngresoListadoResponse>> ObtenerTodos(ParametroPaginacionIngresoRequest parametros)
     {
         try
         {
-            List<Ingreso> ingresos = await _repo.ObtenerTodos();
+            int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
+                ? 1
+                : parametros.NumeroPagina.Value;
 
-            return ingresos.Select(i => new IngresoListadoResponse(
+            int tamanoPagina = parametros.TamanoPagina is null || parametros.TamanoPagina < 1
+                ? 20
+                : parametros.TamanoPagina > 50 ? 50 : parametros.TamanoPagina.Value;
+
+            int? proveedorId = parametros.ProveedorId;
+            bool? anulado = parametros.Anulado;
+
+            string? direccion =
+                string.IsNullOrWhiteSpace(parametros.Direccion) &&
+                parametros.Direccion?.ToLower() is not ("asc" or "desc")
+                    ? "desc"
+                    : parametros.Direccion;
+
+            string? buscar = parametros.Buscar?.Trim().ToLower();
+
+            string? ordenarPor = string.IsNullOrWhiteSpace(parametros.OrdenarPor) ? "fecha" : parametros.OrdenarPor;
+
+            IngresoQueryParametros ingresoQueryParametros = new IngresoQueryParametros
+            {
+                NumeroPagina = numeroPagina,
+                TamanoPagina = tamanoPagina,
+                ProveedorId = proveedorId,
+                Anulado = anulado,
+                Buscar = buscar,
+                OrdenarPor = ordenarPor,
+                Direccion = direccion
+            };
+
+            PaginadoResponse<Ingreso> resultado = await _repo.ObtenerTodos(ingresoQueryParametros);
+
+            List<IngresoListadoResponse> ingresos = resultado.Datos.Select(i => new IngresoListadoResponse(
                 i.Id, i.Fecha, i.Total, i.ProveedorId, i.Proveedor.RazonSocial, i.Anulado
             )).ToList();
+
+            return new PaginadoResponse<IngresoListadoResponse>(
+                ingresos,
+                resultado.NumeroPagina,
+                resultado.TamanoPagina,
+                resultado.TotalRegistros
+            );
         }
         catch (DbException e)
         {

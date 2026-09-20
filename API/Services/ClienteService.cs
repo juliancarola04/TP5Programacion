@@ -5,6 +5,9 @@ using API.Repositories;
 using API.Utilidades;
 using TP5Programacion.Compartidas.DTO.Cliente.Request;
 using TP5Programacion.Compartidas.DTO.Cliente.Response;
+using API.Models.ModeloAuxiliar;
+using API.Models.ModeloAuxiliar.Query.Cliente;
+using TP5Programacion.Compartidas.DTO.Paginado.Request.Cliente;
 
 namespace API.Services
 {
@@ -17,15 +20,49 @@ namespace API.Services
             _repo = repo;
         }
 
-        public async Task<List<ClienteResponse>> ObtenerTodos()
+        public async Task<PaginadoResponse<ClienteResponse>> ObtenerTodos(ParametroPaginacionClienteRequest parametros)
         {
             try
             {
-                List<Cliente> clientes = await _repo.ObtenerTodos();
+                int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
+                    ? 1
+                    : parametros.NumeroPagina.Value;
 
-                return clientes.Select(c => new ClienteResponse(
+                int tamanoPagina = parametros.TamanoPagina is null || parametros.TamanoPagina < 1
+                    ? 20
+                    : parametros.TamanoPagina > 50 ? 50 : parametros.TamanoPagina.Value;
+
+                string? direccion =
+                    string.IsNullOrWhiteSpace(parametros.Direccion) &&
+                    parametros.Direccion?.ToLower() is not ("asc" or "desc")
+                        ? "desc"
+                        : parametros.Direccion;
+
+                string? buscar = parametros.Buscar?.Trim().ToLower();
+
+                string? ordenarPor = string.IsNullOrWhiteSpace(parametros.OrdenarPor) ? null : parametros.OrdenarPor;
+
+                ClienteQueryParametros clienteQueryParametros = new ClienteQueryParametros
+                {
+                    NumeroPagina = numeroPagina,
+                    TamanoPagina = tamanoPagina,
+                    Buscar = buscar,
+                    OrdenarPor = ordenarPor,
+                    Direccion = direccion
+                };
+
+                PaginadoResponse<Cliente> resultado = await _repo.ObtenerTodos(clienteQueryParametros);
+
+                List<ClienteResponse> clientes = resultado.Datos.Select(c => new ClienteResponse(
                     c.Id, c.Nombre, c.Dni, c.Telefono, c.Email, c.Direccion
                 )).ToList();
+
+                return new PaginadoResponse<ClienteResponse>(
+                    clientes,
+                    resultado.NumeroPagina,
+                    resultado.TamanoPagina,
+                    resultado.TotalRegistros
+                );
             }
             catch (DbException e)
             {
