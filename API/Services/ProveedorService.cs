@@ -22,8 +22,6 @@ public class ProveedorService
     
     public async Task<PaginadoResponse<ObtenerProveedorResponse>> ObtenerTodos(ParametroPaginacionProveedorRequest parametros)
     {
-        try
-        {
             int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
                 ? 1
                 : parametros.NumeroPagina.Value;
@@ -75,22 +73,16 @@ public class ProveedorService
                 resultado.TamanoPagina,
                 resultado.TotalRegistros
             );
-        }
-        catch (DbException e)
-        {
-            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-        }
+
     }
 
     public async Task<ObtenerProveedorResponse> ObtenerPorId(int id)
     {
-        try
-        {
             Proveedor? proveedor = await _repo.BuscarPorId(id);
 
             if (proveedor is null)
             {
-                throw new RecursoNoExisteException("No existe ningún cliente con ese id.");
+                throw new RecursoNoExisteException("No existe ningún proveedor con ese id.");
             }
 
             ObtenerProveedorResponse obtenerProveedorResponse = new ObtenerProveedorResponse
@@ -105,11 +97,8 @@ public class ProveedorService
             );
             
             return obtenerProveedorResponse;
-        }
-        catch (DbException e)
-        {
-            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-        }
+        
+
     }
 
     public async Task<CrearProveedorResponse> Crear(CrearProveedorRequest dto)
@@ -124,8 +113,6 @@ public class ProveedorService
             throw new DatosLlegaronErradosException("El formato del E-Mail es inválido.");
         }
 
-        try
-        {
             if (await _repo.ExistePorCuit(dto.Cuit))
             {
                 throw new RecursoExistenteException("Ya existe un proveedor con ese CUIT.");
@@ -158,11 +145,7 @@ public class ProveedorService
             );
 
             return proveedorDtoOutput;
-        }
-        catch (DbException e)
-        {
-            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-        }
+
     }
 
     public async Task Actualizar(int id, ActualizarProveedorRequest actualizarProveedorRequest)
@@ -171,15 +154,12 @@ public class ProveedorService
         {
             throw new DatosLlegaronErradosException("El ID llegó errado.");
         }
-
-        try
-        {
             Proveedor? proveedor = await _repo.BuscarPorId(id);
             bool cambieAlgo = false;
 
             if (proveedor == null)
             {
-                throw new RecursoNoExisteException("No existe ningún usuario con ese ID.");
+                throw new RecursoNoExisteException("No existe ningún proveedor con ese ID.");
             }
 
             if (actualizarProveedorRequest.RazonSocial != proveedor.RazonSocial && Validaciones.EstanDatosBien(actualizarProveedorRequest.RazonSocial))
@@ -247,11 +227,7 @@ public class ProveedorService
             {
                 throw new DatosLlegaronErradosException("Los datos que mandó fueron inválidos");
             }
-        }
-        catch (DbException e)
-        {
-            throw new BaseDeDatosException($"Pasó un problema y no se pudo actualizar el usuario: {e.Message}");
-        }
+        
     }
 
     public async Task DarDeBaja(int id)
@@ -261,8 +237,6 @@ public class ProveedorService
             throw new DatosLlegaronErradosException("El ID llegó errado.");
         }
 
-        try
-        {
             Proveedor? proveedor = await _repo.BuscarPorId(id);
 
             if (proveedor == null)
@@ -273,10 +247,6 @@ public class ProveedorService
             proveedor.Eliminado = true;
 
             await _repo.DarDeBaja(proveedor);
-        }
-        catch (DbException)
-        {
-            throw new BaseDeDatosException("Ocurrió un problema a la hora de contactar con la base de datos.");
-        }
+
     }
 }

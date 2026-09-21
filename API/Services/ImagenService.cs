@@ -49,9 +49,6 @@ namespace API.Services
             {
                 throw new DatosLlegaronErradosException("Tipo MIME inválido para la imagen.");
             }
-
-            try
-            {
                 // Como es 1 a 1: si ya había una imagen para este producto, la reemplazamos.
                 Imagen? imagenExistente = await _repo.ObtenerPorProductoId(productoId);
                 if (imagenExistente is not null)
@@ -88,11 +85,6 @@ namespace API.Services
                 await _repo.Crear(imagen);
 
                 return imagen;
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
         }
 
         private void EliminarArchivoFisico(string rutaRelativa)

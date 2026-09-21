@@ -25,8 +25,6 @@ public class IngresoService
 
     public async Task<PaginadoResponse<IngresoListadoResponse>> ObtenerTodos(ParametroPaginacionIngresoRequest parametros)
     {
-        try
-        {
             int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
                 ? 1
                 : parametros.NumeroPagina.Value;
@@ -71,17 +69,11 @@ public class IngresoService
                 resultado.TamanoPagina,
                 resultado.TotalRegistros
             );
-        }
-        catch (DbException e)
-        {
-            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-        }
     }
 
     public async Task<IngresoResponse> ObtenerPorId(int id)
     {
-        try
-        {
+
             Ingreso? ingreso = await _repo.ObtenerPorId(id);
 
             if (ingreso is null)
@@ -90,11 +82,7 @@ public class IngresoService
             }
 
             return MapearADto(ingreso);
-        }
-        catch (DbException e)
-        {
-            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-        }
+
     }
 
     public async Task<IngresoResponse> Crear(CrearIngresoRequest dto, int usuarioId)
@@ -123,9 +111,6 @@ public class IngresoService
             throw new DatosLlegaronErradosException(
                 "Hay un producto repetido en la lista de items. Combiná las cantidades en un solo ítem antes de enviar.");
         }
-
-        try
-        {
             Proveedor? proveedor = await _proveedorRepo.BuscarPorId(dto.ProveedorId);
             if (proveedor is null)
             {
@@ -171,17 +156,11 @@ public class IngresoService
 
             Ingreso? ingresoCompleto = await _repo.ObtenerPorId(ingreso.Id);
             return MapearADto(ingresoCompleto!);
-        }
-        catch (DbException e)
-        {
-            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-        }
     }
 
     public async Task Anular(int id)
     {
-        try
-        {
+
             Ingreso? ingreso = await _repo.ObtenerParaAnular(id);
 
             if (ingreso is null)
@@ -213,11 +192,7 @@ public class IngresoService
             ingreso.Anulado = true;
 
             await _repo.GuardarCambios();
-        }
-        catch (DbException e)
-        {
-            throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-        }
+
     }
 
     private static IngresoResponse MapearADto(Ingreso ingreso)

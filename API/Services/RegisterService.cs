@@ -37,8 +37,7 @@ namespace API.Services
                 throw new DatosLlegaronErradosException("El formato del E-Mail es inválido.");
             }
 
-            try
-            {
+
                 if (await _usuarioRepository.ExistePorUsername(username))
                 {
                     throw new RecursoExistenteException("Ya existe alguien con ese usuario.");
@@ -48,11 +47,7 @@ namespace API.Services
                 {
                     throw new RecursoExistenteException("Ya existe alguien con ese email.");
                 }
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+
             
             Usuario usuario = new Usuario()
             {
@@ -61,8 +56,7 @@ namespace API.Services
                 Email = email,
             };
 
-            try
-            {
+
                 await _repo.Registrarse(usuario);
 
                 (string token, DateTime expiracion) = _tokenService.CrearToken(usuario);
@@ -70,11 +64,7 @@ namespace API.Services
                 RegisterResponse registerDtoOutput = new RegisterResponse(token);
 
                 return registerDtoOutput;
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Pasó un problema y no se pudo crear el usuario: {e.Message}");
-            }
+
 
         }
     }

@@ -29,9 +29,6 @@ namespace API.Services
             {
                 throw new DatosLlegaronErradosException("Ya sea el usuario o la contraseña llegaron vacíos.");
             }
-
-            try
-            {
                 Usuario? usuario = await _usuarioRepository.BuscarPorUsername(username);
                 
                 if (usuario is null)
@@ -53,11 +50,6 @@ namespace API.Services
                 {
                     throw new DatosLlegaronErradosException("La contraseña ingresada no coincide.");
                 }
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}"); // Quizá acá habría que quitar el e.message.
-            }
             
         }
 

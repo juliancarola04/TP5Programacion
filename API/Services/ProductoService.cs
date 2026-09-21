@@ -24,8 +24,7 @@ namespace API.Services
 
         public async Task<PaginadoResponse<ProductoListadoResponse>> ObtenerTodos(ParametroPaginacionProductoRequest parametros)
         {
-            try
-            {
+
                 int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
                     ? 1
                     : parametros.NumeroPagina.Value;
@@ -68,17 +67,11 @@ namespace API.Services
                     resultado.TamanoPagina,
                     resultado.TotalRegistros
                 );
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+
         }
 
         public async Task<Producto> ObtenerPorId(int id)
         {
-            try
-            {
                 Producto? producto = await _repo.ObtenerPorId(id);
 
                 if (producto is null)
@@ -87,11 +80,6 @@ namespace API.Services
                 }
 
                 return producto;
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
         }
 
         public async Task<ProductoListadoResponse> Crear(CrearProductoRequest dto)
@@ -119,8 +107,6 @@ namespace API.Services
                 throw new DatosLlegaronErradosException("Tanto el precio de compra, como el de venta y del stock no pueden ser negativos");
             }
 
-            try
-            {
                 if (await _repo.ExistePorNombre(dto.Nombre))
                 {
                     throw new RecursoExistenteException("Ya existe un producto con ese nombre.");
@@ -140,11 +126,6 @@ namespace API.Services
                 return new ProductoListadoResponse(
                     producto.Id, producto.Nombre, producto.PrecioCompra,
                     producto.PrecioVenta, producto.Stock, producto.CategoriaId);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
         }
 
         public async Task Actualizar(int id, ActualizarProductoRequest dto)
@@ -164,8 +145,6 @@ namespace API.Services
                 throw new DatosLlegaronErradosException("Tanto el precio de compra, como el de venta y del stock no pueden ser negativos");
             }
 
-            try
-            {
                 Producto? producto = await _repo.ObtenerPorId(id);
 
                 if (producto is null)
@@ -192,17 +171,11 @@ namespace API.Services
                 producto.CategoriaId = dto.CategoriaId;
 
                 await _repo.Actualizar(producto);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
         }
 
         public async Task Eliminar(int id)
         {
-            try
-            {
+
                 Producto? producto = await _repo.ObtenerPorId(id);
 
                 if (producto is null)
@@ -211,11 +184,6 @@ namespace API.Services
                 }
 
                 await _repo.Eliminar(producto);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
         }
     }
 }

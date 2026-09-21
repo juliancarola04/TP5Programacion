@@ -107,8 +107,7 @@ namespace API.Services
                 throw new DatosLlegaronErradosException("La cantidad de cada producto debe ser mayor a cero.");
             }
 
-            try
-            {
+
                 Cliente? cliente = await _clienteRepo.ObtenerPorId(dto.ClienteId);
                 if (cliente is null)
                 {
@@ -166,11 +165,7 @@ namespace API.Services
 
                 Venta? ventaCompleta = await _repo.ObtenerPorId(venta.Id);
                 return MapearADto(ventaCompleta!);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+
         }
         private static VentaResponse MapearADto(Venta venta)
         {
@@ -195,8 +190,7 @@ namespace API.Services
         }
         public async Task Anular(int id)
         {
-            try
-            {
+
                 Venta? venta = await _repo.ObtenerParaAnular(id);
 
                 if (venta is null)
@@ -217,11 +211,7 @@ namespace API.Services
                 venta.Anulada = true;
 
                 await _repo.GuardarCambios();
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+
         }
     }
 }
