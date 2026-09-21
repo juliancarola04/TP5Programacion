@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace API
 {
@@ -104,6 +105,43 @@ namespace API
                 {
                     Directory.CreateDirectory(uploadsPath);
                 }
+
+                app.UseExceptionHandler(exceptionHandlerApp =>
+                {
+                    exceptionHandlerApp.Run(async context =>
+                    {
+                        var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
+                        Exception? exception = exceptionFeature?.Error;
+
+                        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+                        context.Response.ContentType = "application/json";
+                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+                        if (exception is System.Data.Common.DbException dbException)
+                        {
+                            logger.LogError(dbException,
+                                "Error de base de datos al procesar {Method} {Path}",
+                                context.Request.Method, context.Request.Path);
+
+                            await context.Response.WriteAsync("\"Ocurrió un error interno en el servidor. Por favor, intentá nuevamente más tarde.\"");
+                        }
+                        else
+                        {
+                            // Cualquier otra excepción no prevista (un bug real) también queda registrada.
+                            logger.LogError(exception,
+                                "Excepción no controlada al procesar {Method} {Path}",
+                                context.Request.Method, context.Request.Path);
+
+                            await context.Response.WriteAsync("\"Ocurrió un error interno en el servidor.\"");
+                        }
+                    });
+                });
+
+                app.UseSerilogRequestLogging(options =>
+                {
+                    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} respondió {StatusCode} en {Elapsed:0.0000} ms";
+                });
 
                 // 3. Auditoría HTTP automática de Serilog
                 app.UseSerilogRequestLogging(options =>
