@@ -21,8 +21,7 @@ namespace API.Services
         }
         public async Task<PaginadoResponse<CategoriaResponse>> ObtenerTodas(ParametroPaginacionCategoriaRequest parametros)
         {
-            try
-            {
+
                 int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
                     ? 1
                     : parametros.NumeroPagina.Value;
@@ -62,16 +61,10 @@ namespace API.Services
                     resultado.TamanoPagina,
                     resultado.TotalRegistros
                 );
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+
         }
         public async Task<CategoriaResponse> ObtenerPorId(int id)
         {
-            try
-            {
                 Categoria? categoria = await _repo.ObtenerPorId(id);
 
                 if (categoria is null)
@@ -80,11 +73,7 @@ namespace API.Services
                 }
 
                 return new CategoriaResponse(categoria.Id, categoria.Nombre, categoria.Descripcion);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+
         }
         public async Task<CategoriaResponse> Crear(CrearCategoriaRequest dto)
         {
@@ -93,8 +82,6 @@ namespace API.Services
                 throw new DatosLlegaronErradosException("El nombre y la descripción de la categoría son obligatorios.");
             }
 
-            try
-            {
                 if (await _repo.ExistePorNombre(dto.Nombre))
                 {
                     throw new RecursoExistenteException("Ya existe una categoría con ese nombre.");
@@ -109,11 +96,8 @@ namespace API.Services
                 await _repo.Crear(categoria);
 
                 return new CategoriaResponse(categoria.Id, categoria.Nombre, categoria.Descripcion);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+            
+
         }
         public async Task Actualizar(int id, ActualizarCategoriaRequest dto)
         {
@@ -121,9 +105,7 @@ namespace API.Services
             {
                 throw new DatosLlegaronErradosException("El nombre y la descripción de la categoría son obligatorios.");
             }
-            
-            try
-            {
+
                 Categoria? categoria = await _repo.ObtenerPorId(id);
 
                 if (categoria is null)
@@ -140,16 +122,10 @@ namespace API.Services
                 categoria.Descripcion = dto.Descripcion;
 
                 await _repo.Actualizar(categoria);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
         }
         public async Task Eliminar(int id)
         {
-            try
-            {
+
                 Categoria? categoria = await _repo.ObtenerPorId(id);
 
                 if (categoria is null)
@@ -163,11 +139,7 @@ namespace API.Services
                 }
 
                 await _repo.Eliminar(categoria);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+
         }
     }
 }

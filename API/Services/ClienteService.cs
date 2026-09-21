@@ -22,8 +22,6 @@ namespace API.Services
 
         public async Task<PaginadoResponse<ClienteResponse>> ObtenerTodos(ParametroPaginacionClienteRequest parametros)
         {
-            try
-            {
                 int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
                     ? 1
                     : parametros.NumeroPagina.Value;
@@ -63,17 +61,11 @@ namespace API.Services
                     resultado.TamanoPagina,
                     resultado.TotalRegistros
                 );
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+
         }
 
         public async Task<ClienteResponse> ObtenerPorId(int id)
         {
-            try
-            {
                 Cliente? cliente = await _repo.ObtenerPorId(id);
 
                 if (cliente is null)
@@ -82,11 +74,6 @@ namespace API.Services
                 }
 
                 return new ClienteResponse(cliente.Id, cliente.Nombre, cliente.Dni, cliente.Telefono, cliente.Email, cliente.Direccion);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
         }
 
         public async Task<ClienteResponse> Crear(CrearClienteRequest dto)
@@ -102,8 +89,6 @@ namespace API.Services
                 throw new DatosLlegaronErradosException("Alguno de los campos excede la longitud máxima permitida.");
             }
 
-            try
-            {
                 if (await _repo.ExistePorDni(dto.Dni))
                 {
                     throw new RecursoExistenteException("Ya existe un cliente con ese DNI.");
@@ -126,11 +111,7 @@ namespace API.Services
                 await _repo.Crear(cliente);
 
                 return new ClienteResponse(cliente.Id, cliente.Nombre, cliente.Dni, cliente.Telefono, cliente.Email, cliente.Direccion);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+
         }
 
         public async Task Actualizar(int id, ActualizarClienteRequest dto)
@@ -139,9 +120,6 @@ namespace API.Services
             {
                 throw new DatosLlegaronErradosException("Todos los campos del cliente son obligatorios.");
             }
-
-            try
-            {
                 Cliente? cliente = await _repo.ObtenerPorId(id);
 
                 if (cliente is null)
@@ -167,17 +145,10 @@ namespace API.Services
                 cliente.Direccion = dto.Direccion;
 
                 await _repo.Actualizar(cliente);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
         }
 
         public async Task Eliminar(int id)
         {
-            try
-            {
                 Cliente? cliente = await _repo.ObtenerPorId(id);
 
                 if (cliente is null)
@@ -191,11 +162,7 @@ namespace API.Services
                 }
 
                 await _repo.Eliminar(cliente);
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Ocurrió un problema: {e.Message}");
-            }
+
         }
     }
 }

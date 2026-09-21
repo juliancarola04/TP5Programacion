@@ -29,8 +29,6 @@ namespace API.Services
                 throw new DatosLlegaronErradosException("El ID llegó errado.");
             }
 
-            try
-            {
                 Usuario? usuario = await _repo.BuscarPorId(id);
 
                 if (usuario == null)
@@ -42,11 +40,7 @@ namespace API.Services
 
                 await _repo.Actualizar(usuario);
 
-            }
-            catch (DbException)
-            {
-                throw new BaseDeDatosException("Ocurrió un problema a la hora de contactar con la base de datos.");
-            }
+
         }
 
         public async Task QuitarAdministrador(int id)
@@ -56,8 +50,6 @@ namespace API.Services
                 throw new DatosLlegaronErradosException("El ID llegó errado.");
             }
 
-            try
-            {
                 Usuario? usuario = await _repo.BuscarPorId(id);
 
                 if (usuario == null)
@@ -69,11 +61,6 @@ namespace API.Services
 
                 await _repo.Actualizar(usuario);
 
-            }
-            catch (DbException)
-            {
-                throw new BaseDeDatosException("Ocurrió un problema a la hora de contactar con la base de datos.");
-            }
         }
 
         public async Task<ActualizarUsuarioResponse> Actualizar(int id, ActualizarUsuarioRequest actualizarUsuarioRequest)
@@ -83,8 +70,6 @@ namespace API.Services
                 throw new DatosLlegaronErradosException("El ID llegó errado.");
             }
 
-            try
-            {
                 Usuario? usuario = await _repo.BuscarPorId(id);
                 bool cambieAlgo = false;
 
@@ -143,11 +128,7 @@ namespace API.Services
                 {
                     throw new DatosLlegaronErradosException("Los datos que mandó fueron inválidos");
                 }
-            }
-            catch (DbException e)
-            {
-                throw new BaseDeDatosException($"Pasó un problema y no se pudo actualizar el usuario: {e.Message}");
-            }
+
         }
 
         public async Task DarDeBaja(int id)
@@ -157,8 +138,6 @@ namespace API.Services
                 throw new DatosLlegaronErradosException("El ID llegó errado.");
             }
 
-            try
-            {
                 Usuario? usuario = await _repo.BuscarPorId(id);
 
                 if (usuario == null)
@@ -169,17 +148,13 @@ namespace API.Services
                 usuario.Eliminado = true;
 
                 await _repo.DarDeBaja(usuario);
-            }
-            catch (DbException)
-            {
-                throw new BaseDeDatosException("Ocurrió un problema a la hora de contactar con la base de datos.");
-            }
+            
+
         }
 
         public async Task<PaginadoResponse<ObtenerUsuarioResponse>> ObtenerlosATodos(ParametroPaginacionUsuarioRequest parametros)
         {
-            try
-            {
+
                 int numeroPagina = parametros.NumeroPagina is null || parametros.NumeroPagina < 1
                     ? 1
                     : parametros.NumeroPagina.Value;
@@ -216,11 +191,7 @@ namespace API.Services
                     resultado.TamanoPagina,
                     resultado.TotalRegistros
                     );
-            }
-            catch (DbException)
-            {
-                throw new BaseDeDatosException("Ocurrió un problema a la hora de contactar con la base de datos.");
-            }
+
         }
     }
 }

@@ -3,12 +3,13 @@ using API.Options;
 using API.Repositories;
 using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Data.Common;
 using System.Text;
-using Microsoft.AspNetCore.Diagnostics;
 
 namespace API
 {
@@ -118,9 +119,12 @@ namespace API
                         context.Response.ContentType = "application/json";
                         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-                        if (exception is System.Data.Common.DbException dbException)
+                        DbException? dbException = BuscarDbExceptionEnCadena(exception);
+
+                        if (dbException is not null)
                         {
-                            logger.LogError(dbException,
+                            // Logueamos la excepción ORIGINAL completa (con toda la cadena de InnerException incluida).
+                            logger.LogError(exception,
                                 "Error de base de datos al procesar {Method} {Path}",
                                 context.Request.Method, context.Request.Path);
 
@@ -128,7 +132,6 @@ namespace API
                         }
                         else
                         {
-                            // Cualquier otra excepción no prevista (un bug real) también queda registrada.
                             logger.LogError(exception,
                                 "Excepción no controlada al procesar {Method} {Path}",
                                 context.Request.Method, context.Request.Path);
@@ -138,16 +141,24 @@ namespace API
                     });
                 });
 
+                static DbException? BuscarDbExceptionEnCadena(Exception? ex)
+                {
+                    while (ex is not null)
+                    {
+                        if (ex is DbException dbEx)
+                        {
+                            return dbEx;
+                        }
+                        ex = ex.InnerException;
+                    }
+                    return null;
+                }
+
                 app.UseSerilogRequestLogging(options =>
                 {
                     options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} respondió {StatusCode} en {Elapsed:0.0000} ms";
                 });
 
-                // 3. Auditoría HTTP automática de Serilog
-                app.UseSerilogRequestLogging(options =>
-                {
-                    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} respondió {StatusCode} en {Elapsed:0.0000} ms";
-                });
 
                 if (app.Environment.IsDevelopment())
                 {
