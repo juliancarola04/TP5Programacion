@@ -2,6 +2,9 @@
 
 API REST para administrar usuarios, categorías, clientes, proveedores, productos, ingresos y ventas.
 
+##Diagrama ER
+![Diagrama de relaciones](docs/DiagramaTP5LopezCarola)
+
 ## Tecnologías
 
 - .NET 10 y ASP.NET Core
