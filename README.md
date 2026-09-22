@@ -2,7 +2,8 @@
 
 API REST para administrar usuarios, categorías, clientes, proveedores, productos, ingresos y ventas.
 
-##Diagrama ER
+## Diagrama ER
+
 ![Diagrama de relaciones](Docs/DiagramaTPN5LopezCarola.png)
 
 ## Tecnologías
